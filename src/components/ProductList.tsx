@@ -26,6 +26,7 @@ const ProductCard = ({ product, shop }: { product: Product; shop: Shop }) => {
   const [selectedImage, setSelectedImage] = useState(product.image_urls?.[0] || null);
 
   const handleInquire = () => {
+    console.log('NEXT_PUBLIC_BASE_URL:', process.env.NEXT_PUBLIC_BASE_URL);
     const productLink = `${process.env.NEXT_PUBLIC_BASE_URL}/product/${product.id}`;
     const whatsappMessage = encodeURIComponent(`I'm interested in your product: ${product.name}. More details: ${productLink}`);
     const cleanedWhatsappNumber = shop.whatsapp_number.replace(/\D/g, '');

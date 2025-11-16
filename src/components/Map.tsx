@@ -6,6 +6,9 @@ interface MapProps {
 }
 
 const Map = ({ lat, lng }: MapProps) => {
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+  const url = `https://www.google.com/maps/embed/v1/view?key=${apiKey}&center=${lat},${lng}&zoom=14`;
+
   return (
     <div className="w-full h-full">
       <iframe
@@ -15,7 +18,7 @@ const Map = ({ lat, lng }: MapProps) => {
         scrolling="no"
         marginHeight={0}
         marginWidth={0}
-        src={`https://www.openstreetmap.org/export/embed.html?bbox=${lng - 0.01}%2C${lat - 0.01}%2C${lng + 0.01}%2C${lat + 0.01}&layer=mapnik&marker=${lat}%2C${lng}`}
+        src={url}
       ></iframe>
     </div>
   );

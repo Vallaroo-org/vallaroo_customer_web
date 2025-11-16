@@ -3,32 +3,6 @@
 import Map from '@/components/Map';
 
 export default function StoreDetails({ store }: { store: any }) {
-  const openMap = () => {
-    let query;
-    if (store.latitude && store.longitude) {
-      query = `${store.latitude},${store.longitude}`;
-    } else {
-      const address = [
-        store.address_line1,
-        store.address_line2,
-        store.city,
-        store.state,
-        store.postal_code,
-        store.country,
-      ]
-        .filter(Boolean)
-        .join(', ');
-      if (address) {
-        query = address;
-      }
-    }
-
-    if (query) {
-      const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
-      window.open(url, '_blank');
-    }
-  };
-
   const storeGallery = store.gallery_images || [];
   const displayImages = storeGallery.slice(0, 3);
   const hasMoreImages = storeGallery.length > 3;
@@ -59,18 +33,17 @@ export default function StoreDetails({ store }: { store: any }) {
               {store.country && <div>{store.country}</div>}
             </address>
           </div>
-          <div>
-            <h3 className="font-semibold text-gray-700">Location</h3>
-            <button
-              onClick={openMap}
-              className="mt-2 w-full inline-flex items-center justify-center px-4 py-2 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-600 transition-colors"
-            >
-              Open in Maps
-            </button>
-          </div>
+          {store.latitude && store.longitude && (
+            <div>
+              <h3 className="font-semibold text-gray-700">Location</h3>
+              <div className="mt-2 h-64 w-full rounded-lg overflow-hidden">
+                <Map lat={store.latitude} lng={store.longitude} />
+              </div>
+            </div>
+          )}
 
           {/* Shop Gallery */}
-          {storeGallery.length >. 0 && (
+          {storeGallery.length > 0 && (
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-2xl font-bold mb-4 text-gray-800">Gallery</h2>
               <div className="grid grid-cols-2 gap-4">
