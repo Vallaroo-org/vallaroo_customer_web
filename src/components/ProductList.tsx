@@ -1,12 +1,13 @@
-import ProductModal from './ProductModal';
 'use client';
 
+import ProductModal from './ProductModal';
 import { useState, useMemo } from 'react';
 
 interface Product {
   id: string;
   name: string;
   price: number;
+  description: string; // Added description
   image_url: string;
   image: string;
   images: string[];
