@@ -27,9 +27,21 @@ const StorePage: NextPage<StorePageProps> = async ({ params }) => {
   if (storeError || !store) {
     return (
       <div className="flex items-center justify-center h-screen bg-gray-100">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-800">404</h1>
-          <p className="text-xl text-gray-600">Store not found</p>
+        <div className="text-center p-8">
+          <h1 className="text-4xl font-bold text-gray-800">404 - Store Not Found</h1>
+          <p className="text-xl text-gray-600 mt-4">
+            We couldn't find the store you're looking for.
+          </p>
+          <div className="mt-8 p-4 border rounded-md bg-red-50 text-left">
+            <h3 className="font-bold text-red-800">Debugging Information:</h3>
+            <pre className="mt-2 text-sm text-red-700 whitespace-pre-wrap">
+              {JSON.stringify({
+                storeId,
+                storeFound: !!store,
+                storeError,
+              }, null, 2)}
+            </pre>
+          </div>
         </div>
       </div>
     );
@@ -87,7 +99,14 @@ const StorePage: NextPage<StorePageProps> = async ({ params }) => {
           <div className="lg:col-span-2">
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-2xl font-bold mb-4 text-gray-800">Products</h2>
-              {productsError && <div className="text-red-500">Error loading products</div>}
+              {productsError && (
+                <div className="mt-8 p-4 border rounded-md bg-red-50 text-left">
+                  <h3 className="font-bold text-red-800">Products Error:</h3>
+                  <pre className="mt-2 text-sm text-red-700 whitespace-pre-wrap">
+                    {JSON.stringify(productsError, null, 2)}
+                  </pre>
+                </div>
+              )}
               {products && <ProductList products={products} />}
             </div>
           </div>
