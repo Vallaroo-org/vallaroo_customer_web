@@ -9,6 +9,7 @@ interface Product {
   price: number;
   description: string;
   image_urls: string[];
+  shop_id: string;
 }
 
 const ProductPage = ({ params }: { params: { productId: string } }) => {
