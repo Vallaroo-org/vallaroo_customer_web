@@ -14,6 +14,8 @@ export default async function StorePage(props: any) {
   const { storeId } = params;
 
   console.log('Resolved storeId:', storeId);
+  console.log('Store data:', JSON.stringify(store, null, 2));
+  console.log('Products data:', JSON.stringify(products, null, 2));
 
   // Check if storeId is a valid UUID to prevent the query from running with an invalid value
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -109,7 +111,7 @@ export default async function StorePage(props: any) {
               <ShareButton />
               {store.whatsapp_number && (
                 <a
-                  href={`https://wa.me/91${store.whatsapp_number}`}
+                  href={`https://wa.me/91${store.whatsapp_number.replace(/\D/g, '')}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center p-2 bg-green-500 text-white font-bold rounded-full hover:bg-green-600 transition-colors"
