@@ -1,8 +1,15 @@
-'use client';
+1'use client';
 
 import { useState } from 'react';
 
-const ShareButton = () => {
+interface ShareButtonProps {
+  store: {
+    whatsapp_number?: string;
+    name: string;
+  };
+}
+
+const ShareButton = ({ store }: ShareButtonProps) => {
   const [copied, setCopied] = useState(false);
 
   const copyToClipboard = () => {
@@ -13,13 +20,31 @@ const ShareButton = () => {
     });
   };
 
+  const handleWhatsAppInquiry = () => {
+    if (store.whatsapp_number) {
+      const cleanedWhatsappNumber = store.whatsapp_number.replace(/\D/g, '');
+      const whatsappUrl = `https://wa.me/${cleanedWhatsappNumber.startsWith('91') ? cleanedWhatsappNumber : '91' + cleanedWhatsappNumber}`;
+      window.open(whatsappUrl, '_blank');
+    }
+  };
+
   return (
-    <button
-      onClick={copyToClipboard}
-      className="bg-blue-500 text-white px-4 py-2 rounded-md mr-4"
-    >
-      {copied ? 'Copied!' : 'Share'}
-    </button>
+    <div className="flex items-center space-x-2">
+      <button
+        onClick={copyToClipboard}
+        className="bg-blue-500 text-white px-4 py-2 rounded-md"
+      >
+        {copied ? 'Copied!' : 'Share'}
+      </button>
+      {store.whatsapp_number && (
+        <button
+          onClick={handleWhatsAppInquiry}
+          className="bg-green-500 text-white px-4 py-2 rounded-md"
+        >
+          Inquire on WhatsApp
+        </button>
+      )}
+    </div>
   );
 };
 

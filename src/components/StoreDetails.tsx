@@ -5,15 +5,15 @@ import Map from '@/components/Map';
 export default function StoreDetails({ store }: { store: any }) {
   const openMap = () => {
     let query;
-    if (store.lat && store.lng) {
-      query = `${store.lat},${store.lng}`;
+    if (store.latitude && store.longitude) {
+      query = `${store.latitude},${store.longitude}`;
     } else {
       const address = [
-        store.address_line_1,
-        store.address_line_2,
+        store.address_line1,
+        store.address_line2,
         store.city,
         store.state,
-        store.pincode,
+        store.postal_code,
         store.country,
       ]
         .filter(Boolean)
@@ -47,13 +47,13 @@ export default function StoreDetails({ store }: { store: any }) {
           <div>
             <h3 className="font-semibold text-gray-700">Address</h3>
             <address className="text-gray-600 not-italic">
-              {store.address_line_1 && <div>{store.address_line_1}</div>}
-              {store.address_line_2 && <div>{store.address_line_2}</div>}
-              {(store.city || store.state || store.pincode) && (
+              {store.address_line1 && <div>{store.address_line1}</div>}
+              {store.address_line2 && <div>{store.address_line2}</div>}
+              {(store.city || store.state || store.postal_code) && (
                 <div>
                   {store.city && <span>{store.city}, </span>}
                   {store.state && <span>{store.state} </span>}
-                  {store.pincode && <span>{store.pincode}</span>}
+                  {store.postal_code && <span>{store.postal_code}</span>}
                 </div>
               )}
               {store.country && <div>{store.country}</div>}
@@ -70,7 +70,7 @@ export default function StoreDetails({ store }: { store: any }) {
           </div>
 
           {/* Shop Gallery */}
-          {storeGallery.length > 0 && (
+          {storeGallery.length >. 0 && (
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-2xl font-bold mb-4 text-gray-800">Gallery</h2>
               <div className="grid grid-cols-2 gap-4">
