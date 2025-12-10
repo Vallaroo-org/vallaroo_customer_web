@@ -5,7 +5,18 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   },
-  /* config options here */
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'dihxruochfwayuwqhkiw.supabase.co',
+      },
+      {
+        protocol: 'https',
+        hostname: 'oygtbslhjtjygghreevd.supabase.co',
+      },
+    ],
+  },
 };
 
 export default nextConfig;

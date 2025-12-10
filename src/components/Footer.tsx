@@ -3,10 +3,17 @@ import Link from 'next/link';
 const Footer = () => {
     return (
         <footer className="border-t bg-muted/40">
-            <div className="container flex items-center justify-center py-6 mx-auto px-4">
+            <div className="container flex flex-col md:flex-row items-center justify-between py-6 mx-auto px-4 gap-4">
                 <p className="text-center text-sm text-muted-foreground">
-                    Built by Vallaroo Team.
+                    &copy; {new Date().getFullYear()} Vallaroo. All rights reserved.
                 </p>
+                <div className="flex items-center gap-6 text-sm text-muted-foreground">
+                    <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
+                    <Link href="/terms" className="hover:text-foreground transition-colors">Terms of Service</Link>
+                    <Link href="/refund-policy" className="hover:text-foreground transition-colors">Refund Policy</Link>
+                    <Link href="/shipping-policy" className="hover:text-foreground transition-colors">Shipping Policy</Link>
+                    <Link href="/contact" className="hover:text-foreground transition-colors">Contact Us</Link>
+                </div>
             </div>
         </footer>
     );

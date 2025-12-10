@@ -15,8 +15,11 @@ export default async function StorePage(props: any) {
 
   const { data: store, error: storeError } = await supabase
     .from('shops')
-    .select('*')
+    .select('*, businesses!inner(is_hidden)')
     .eq('id', storeId)
+    .eq('is_hidden', false)
+    .eq('is_verified', true)
+    .filter('businesses.is_hidden', 'eq', false)
     .single();
 
   const { data: products, error: productsError } = await supabase

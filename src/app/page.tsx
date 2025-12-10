@@ -6,7 +6,10 @@ import Footer from '../components/Footer';
 import ShopCard from '../components/ShopCard';
 import ProductCard from '../components/ProductCard';
 import { fetchShops, fetchProducts, fetchCategories, Shop, Product, Category } from '../lib/api';
-import { Search } from 'lucide-react';
+import { Search, MapPin } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
+import { useLocation } from '../context/LocationContext';
+import { getDrivingDistances } from '../lib/locationService';
 
 const DiscoverPage = () => {
   const [shops, setShops] = useState<Shop[]>([]);
@@ -15,7 +18,9 @@ const DiscoverPage = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
-  const [activeTab, setActiveTab] = useState<'shops' | 'products'>('shops');
+  const [activeTab, setActiveTab] = useState<'shops' | 'products'>('products');
+  const { latitude, longitude, requestLocation, permissionStatus, isLoading: isLocationLoading } = useLocation();
+  const [distancesCalculated, setDistancesCalculated] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -38,28 +43,75 @@ const DiscoverPage = () => {
     loadData();
   }, []);
 
+  // Calculate distances when location and shops are available
+  useEffect(() => {
+    const calculateDistances = async () => {
+      if (latitude && longitude && shops.length > 0 && !distancesCalculated) {
+        const distances = await getDrivingDistances(latitude, longitude, shops);
+
+        setShops(prevShops => {
+          const updatedShops = prevShops.map(shop => ({
+            ...shop,
+            distance: distances[shop.id] ? `${distances[shop.id]} km` : shop.distance
+          }));
+
+          // Sort by distance if available
+          return updatedShops.sort((a, b) => {
+            const distA = distances[a.id] ? parseFloat(distances[a.id]) : Infinity;
+            const distB = distances[b.id] ? parseFloat(distances[b.id]) : Infinity;
+
+            // If both are Infinity (no distance), keep original order or sort by some other metric
+            if (distA === Infinity && distB === Infinity) return 0;
+            return distA - distB;
+          });
+        });
+
+        setDistancesCalculated(true);
+      }
+    };
+
+    calculateDistances();
+  }, [latitude, longitude, shops.length, distancesCalculated]);
+
+  const { t, locale } = useLanguage();
+
+  const getLocalizedContent = (item: any, field: string) => {
+    if (locale === 'ml') {
+      return item[`${field}_ml`] || item[field];
+    }
+    return item[field];
+  };
+
   const filteredShops = shops.filter((shop) => {
-    const matchesSearch = shop.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (shop.city && shop.city.toLowerCase().includes(searchQuery.toLowerCase()));
+    const name = getLocalizedContent(shop, 'name');
+    const city = getLocalizedContent(shop, 'city');
+    const description = getLocalizedContent(shop, 'description');
+
+    const matchesSearch = name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (city && city.toLowerCase().includes(searchQuery.toLowerCase()));
 
     const matchesCategory = activeCategory === 'All' ||
-      shop.name.toLowerCase().includes(activeCategory.toLowerCase()) ||
-      (shop.description && shop.description.toLowerCase().includes(activeCategory.toLowerCase())) ||
-      (shop.city && shop.city.toLowerCase().includes(activeCategory.toLowerCase()));
+      name.toLowerCase().includes(activeCategory.toLowerCase()) ||
+      (description && description.toLowerCase().includes(activeCategory.toLowerCase())) ||
+      (city && city.toLowerCase().includes(activeCategory.toLowerCase()));
 
     return matchesSearch && matchesCategory;
   });
 
   const filteredProducts = products.filter((product) => {
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (product.shops?.name && product.shops.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    const name = getLocalizedContent(product, 'name');
+    const description = getLocalizedContent(product, 'description');
+    const shopName = product.shops ? getLocalizedContent(product.shops, 'name') : '';
+
+    const matchesSearch = name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (shopName && shopName.toLowerCase().includes(searchQuery.toLowerCase()));
 
     const categoryName = categories.find(c => c.id === product.category_id)?.name;
 
     const matchesCategory = activeCategory === 'All' ||
       categoryName === activeCategory ||
-      product.name.toLowerCase().includes(activeCategory.toLowerCase()) ||
-      (product.description && product.description.toLowerCase().includes(activeCategory.toLowerCase()));
+      name.toLowerCase().includes(activeCategory.toLowerCase()) ||
+      (description && description.toLowerCase().includes(activeCategory.toLowerCase()));
 
     return matchesSearch && matchesCategory;
   });
@@ -69,10 +121,26 @@ const DiscoverPage = () => {
       <Navbar />
       <main className="flex-1 container mx-auto px-4 py-8 max-w-screen-2xl">
         <div className="mb-8 space-y-4">
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Discover Local</h1>
-          <p className="text-muted-foreground max-w-2xl">
-            Explore the best local businesses and unique products around you.
-          </p>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight text-foreground">{t('discoverLocal')}</h1>
+              <p className="text-muted-foreground max-w-2xl">
+                {t('exploreBest')}
+              </p>
+            </div>
+
+            {/* Location Request Button */}
+            {!latitude && (
+              <button
+                onClick={requestLocation}
+                className="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors text-sm font-medium self-start md:self-center"
+                disabled={isLocationLoading}
+              >
+                <MapPin className="w-4 h-4" />
+                {isLocationLoading ? 'Locating...' : permissionStatus === 'denied' ? 'Location Denied' : t('useCurrentLocation')}
+              </button>
+            )}
+          </div>
 
           {/* Search Bar */}
           <div className="relative max-w-lg">
@@ -82,7 +150,7 @@ const DiscoverPage = () => {
             <input
               type="search"
               className="block w-full p-4 pl-10 text-sm border border-input rounded-xl bg-card text-foreground focus:ring-2 focus:ring-primary/50 focus:border-primary focus:outline-none shadow-sm transition-all placeholder:text-muted-foreground"
-              placeholder={`Search for ${activeTab === 'shops' ? 'stores' : 'products'}...`}
+              placeholder={activeTab === 'shops' ? t('searchShops') : t('searchExample')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -90,16 +158,7 @@ const DiscoverPage = () => {
         </div>
 
         {/* Tabs */}
-        <div className="flex space-x-1 rounded-xl bg-muted p-1 mb-8 max-w-md">
-          <button
-            onClick={() => setActiveTab('shops')}
-            className={`w-full rounded-lg py-2.5 text-sm font-medium leading-5 transition-all duration-200 focus:outline-none focus:ring-2 ring-offset-2 ring-offset-background focus:ring-primary ${activeTab === 'shops'
-              ? 'bg-background shadow-md text-foreground'
-              : 'text-muted-foreground hover:bg-background/50 hover:text-foreground hover:shadow-sm'
-              }`}
-          >
-            Shops
-          </button>
+        <div className="flex gap-4 mb-8 max-w-md">
           <button
             onClick={() => setActiveTab('products')}
             className={`w-full rounded-lg py-2.5 text-sm font-medium leading-5 transition-all duration-200 focus:outline-none focus:ring-2 ring-offset-2 ring-offset-background focus:ring-primary ${activeTab === 'products'
@@ -107,40 +166,24 @@ const DiscoverPage = () => {
               : 'text-muted-foreground hover:bg-background/50 hover:text-foreground hover:shadow-sm'
               }`}
           >
-            Products
+            {t('products')}
           </button>
-        </div>
-
-        {/* Categories / Filters */}
-        <div className="flex gap-2 overflow-x-auto pb-4 mb-8 scrollbar-hide">
           <button
-            onClick={() => setActiveCategory('All')}
-            className={`px-4 py-2 rounded-full border text-sm font-medium whitespace-nowrap transition-colors ${activeCategory === 'All'
-                ? 'bg-primary text-primary-foreground border-primary'
-                : 'bg-card text-card-foreground border-border hover:bg-accent hover:text-accent-foreground'
+            onClick={() => setActiveTab('shops')}
+            className={`w-full rounded-lg py-2.5 text-sm font-medium leading-5 transition-all duration-200 focus:outline-none focus:ring-2 ring-offset-2 ring-offset-background focus:ring-primary ${activeTab === 'shops'
+              ? 'bg-background shadow-md text-foreground'
+              : 'text-muted-foreground hover:bg-background/50 hover:text-foreground hover:shadow-sm'
               }`}
           >
-            All
+            {t('shops')}
           </button>
-          {categories.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => setActiveCategory(cat.name)}
-              className={`px-4 py-2 rounded-full border text-sm font-medium whitespace-nowrap transition-colors ${activeCategory === cat.name
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'bg-card text-card-foreground border-border hover:bg-accent hover:text-accent-foreground'
-                }`}
-            >
-              {cat.name}
-            </button>
-          ))}
         </div>
 
         {/* Content */}
         {activeTab === 'shops' ? (
           <section className="mb-12">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-semibold tracking-tight">Nearby Shops</h2>
+              <h2 className="text-2xl font-semibold tracking-tight">{t('nearbyShops')}</h2>
             </div>
 
             {loading ? (
@@ -155,26 +198,26 @@ const DiscoverPage = () => {
                   <ShopCard
                     key={shop.id}
                     id={shop.id}
-                    name={shop.name}
-                    category={shop.city || 'Local Store'}
+                    name={getLocalizedContent(shop, 'name')}
+                    category={getLocalizedContent(shop, 'city') || 'Local Store'}
                     imageUrl={shop.cover_image_url || ''}
                     logoUrl={shop.logo_url}
                     rating={shop.rating || 0}
-                    distance={shop.distance || 'Nearby'}
+                    distance={shop.distance || (latitude ? 'Calculating...' : 'Nearby')}
                     deliveryTime={shop.delivery_time || 'Standard'}
                   />
                 ))}
               </div>
             ) : (
               <div className="text-center py-10 border border-dashed rounded-lg">
-                <p className="text-muted-foreground">No shops found matching your search.</p>
+                <p className="text-muted-foreground">{t('noShopsFound')}</p>
               </div>
             )}
           </section>
         ) : (
           <section>
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-semibold tracking-tight">Fresh Finds</h2>
+              <h2 className="text-2xl font-semibold tracking-tight">{t('freshFinds')}</h2>
             </div>
 
             {loading ? (
@@ -189,18 +232,21 @@ const DiscoverPage = () => {
                   <ProductCard
                     key={product.id}
                     id={product.id}
-                    name={product.name}
+                    name={getLocalizedContent(product, 'name')}
                     price={product.price}
                     mrp={product.mrp}
                     imageUrl={product.image_urls?.[0] || null}
-                    shopName={product.shops?.name || 'Unknown Shop'}
-                    category={categories.find(c => c.id === product.category_id)?.name}
+                    shopName={product.shops ? getLocalizedContent(product.shops, 'name') : 'Unknown Shop'}
+                    shopId={product.shop_id}
+                    shopPhone={product.shops?.phone_number || undefined}
+                    shopLogo={product.shops?.logo_url || undefined}
+                    category={getLocalizedContent(categories.find(c => c.id === product.category_id) || {}, 'name')}
                   />
                 ))}
               </div>
             ) : (
               <div className="text-center py-10 border border-dashed rounded-lg">
-                <p className="text-muted-foreground">No products found matching your search.</p>
+                <p className="text-muted-foreground">{t('noProductsFound')}</p>
               </div>
             )}
           </section>

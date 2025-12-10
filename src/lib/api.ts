@@ -3,10 +3,13 @@ import { supabase } from './supabaseClient';
 export interface Shop {
     id: string;
     name: string;
+    name_ml?: string | null;
     description: string | null;
+    description_ml?: string | null;
     phone_number: string | null;
     address_line1: string | null;
     city: string | null;
+    city_ml?: string | null;
     cover_image_url: string | null;
     logo_url: string | null;
     rating?: number; // Not in DB yet, can be calculated or mocked
@@ -19,23 +22,31 @@ export interface Shop {
 export interface Product {
     id: string;
     name: string;
+    name_ml?: string | null;
     description: string | null;
+    description_ml?: string | null;
     price: number;
     mrp: number;
     image_urls: string[] | null;
     shop_id: string;
     shops?: {
         name: string;
+        name_ml?: string | null;
         phone_number: string | null;
+        logo_url?: string | null;
     };
     category_id: string | null;
 }
 
-export const fetchShops = async (): Promise<Shop[]> => {
+export const fetchShops = async (limit = 20): Promise<Shop[]> => {
     const { data, error } = await supabase
         .from('shops')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('*, businesses!inner(is_hidden)')
+        .eq('is_hidden', false)
+        .eq('is_verified', true)
+        .filter('businesses.is_hidden', 'eq', false)
+        .order('created_at', { ascending: false })
+        .limit(limit);
 
     if (error) {
         console.error('Error fetching shops:', error);
@@ -48,8 +59,11 @@ export const fetchShops = async (): Promise<Shop[]> => {
 export const fetchShop = async (id: string): Promise<Shop | null> => {
     const { data, error } = await supabase
         .from('shops')
-        .select('*')
+        .select('*, businesses!inner(is_hidden)')
         .eq('id', id)
+        .eq('is_hidden', false)
+        .eq('is_verified', true)
+        .filter('businesses.is_hidden', 'eq', false)
         .single();
 
     if (error) {
@@ -61,9 +75,32 @@ export const fetchShop = async (id: string): Promise<Shop | null> => {
 };
 
 export const fetchProducts = async (limit = 20): Promise<Product[]> => {
+    // We need to filter by shop visibility AND business visibility
+    // Since nested filtering can be tricky with aliases, we'll use !inner joins
+    // and filter on the joined tables directly if possible, or use the path syntax carefully.
+
+    // Note: 'shops.businesses.is_hidden' failed with "column businesses_2.is_hidden does not exist"
+    // This suggests PostgREST is aliasing the nested join.
+    // A safer way is to filter within the select statement for the join,
+    // BUT Supabase JS doesn't support filtering inside select() easily for deep nested logic
+    // that affects the top level row count unless using !inner.
+
     const { data, error } = await supabase
         .from('products')
-        .select('*, shops(name, phone_number)')
+        .select(`
+            *,
+            shops!inner(
+                name,
+                phone_number,
+                logo_url,
+                is_hidden,
+                is_verified,
+                businesses!inner(is_hidden)
+            )
+        `)
+        .eq('shops.is_hidden', false)
+        .eq('shops.is_verified', true)
+        .filter('shops.businesses.is_hidden', 'eq', false)
         .order('created_at', { ascending: false })
         .limit(limit);
 
@@ -78,8 +115,21 @@ export const fetchProducts = async (limit = 20): Promise<Product[]> => {
 export const fetchProduct = async (id: string): Promise<Product | null> => {
     const { data, error } = await supabase
         .from('products')
-        .select('*, shops(name, phone_number)')
+        .select(`
+            *,
+            shops!inner(
+                name,
+                phone_number,
+                logo_url,
+                is_hidden,
+                is_verified,
+                businesses!inner(is_hidden)
+            )
+        `)
         .eq('id', id)
+        .eq('shops.is_hidden', false)
+        .eq('shops.is_verified', true)
+        .filter('shops.businesses.is_hidden', 'eq', false)
         .single();
 
     if (error) {

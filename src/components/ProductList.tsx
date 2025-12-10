@@ -2,7 +2,9 @@
 
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, Filter, Share2, MessageCircle } from 'lucide-react';
+import { Search, Filter, Share2, MessageCircle, ShoppingCart, Check } from 'lucide-react';
+import { useCart } from '../context/CartContext';
+import { useLanguage } from '../context/LanguageContext';
 
 interface Product {
   id: string;
@@ -14,7 +16,10 @@ interface Product {
 }
 
 interface Shop {
-  whatsapp_number: string;
+  id: string;
+  name: string;
+  whatsapp_number?: string;
+  logo_url?: string;
 }
 
 interface ProductListProps {
@@ -27,13 +32,46 @@ const ITEMS_PER_PAGE = 6;
 const ProductCard = ({ product, shop }: { product: Product; shop: Shop }) => {
   const [selectedImage, setSelectedImage] = useState(product.image_urls?.[0] || null);
   const [copied, setCopied] = useState(false);
+  const [isAdded, setIsAdded] = useState(false);
   const router = useRouter();
+  const { addToCart } = useCart();
+  const { locale, t } = useLanguage();
+
+  const getLocalizedContent = (item: any, field: string) => {
+    if (!item) return '';
+    if (locale === 'ml') {
+      return item[`${field}_ml`] || item[field];
+    }
+    return item[field];
+  };
+
+  const shopName = getLocalizedContent(shop, 'name');
+  const productName = getLocalizedContent(product, 'name');
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    addToCart({
+      productId: product.id,
+      quantity: 1,
+      shopId: shop.id,
+      shopName: shopName,
+      shopPhone: shop.whatsapp_number,
+      shopLogo: shop.logo_url,
+      productName: productName,
+      price: product.price,
+      imageUrl: product.image_urls?.[0],
+    });
+    setIsAdded(true);
+    setTimeout(() => setIsAdded(false), 2000);
+  };
 
   const handleInquire = (e: React.MouseEvent) => {
     e.stopPropagation();
     const baseUrl = 'https://app.vallaroo.com';
     const productLink = `${baseUrl}/product/${product.id}`;
     const whatsappMessage = encodeURIComponent(`I'm interested in your product: ${product.name}. More details: ${productLink}`);
+
+    if (!shop.whatsapp_number) return;
     const cleanedWhatsappNumber = shop.whatsapp_number.replace(/\D/g, '');
     const whatsappUrl = `https://wa.me/${cleanedWhatsappNumber.startsWith('91') ? cleanedWhatsappNumber : '91' + cleanedWhatsappNumber}?text=${whatsappMessage}`;
     window.open(whatsappUrl, '_blank');
@@ -63,7 +101,7 @@ const ProductCard = ({ product, shop }: { product: Product; shop: Shop }) => {
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={selectedImage}
-            alt={product.name}
+            alt={productName}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
           />
         ) : (
@@ -81,6 +119,13 @@ const ProductCard = ({ product, shop }: { product: Product; shop: Shop }) => {
             title="Share"
           >
             <Share2 className="w-4 h-4" />
+          </button>
+          <button
+            onClick={handleAddToCart}
+            className="p-2 rounded-full bg-background/80 backdrop-blur-sm text-foreground shadow-sm hover:bg-background transition-colors"
+            title="Add to Cart"
+          >
+            {isAdded ? <Check className="w-4 h-4 text-green-600" /> : <ShoppingCart className="w-4 h-4" />}
           </button>
         </div>
       </div>
@@ -101,7 +146,7 @@ const ProductCard = ({ product, shop }: { product: Product; shop: Shop }) => {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={url}
-                  alt={`${product.name} thumbnail ${index + 1}`}
+                  alt={`${productName} thumbnail ${index + 1}`}
                   className="w-full h-full object-cover"
                 />
               </button>
@@ -111,7 +156,7 @@ const ProductCard = ({ product, shop }: { product: Product; shop: Shop }) => {
 
         <div className="flex-grow space-y-2">
           <div className="flex justify-between items-start gap-2">
-            <h3 className="text-lg font-semibold leading-tight line-clamp-2 group-hover:text-primary transition-colors">{product.name}</h3>
+            <h3 className="text-lg font-semibold leading-tight line-clamp-2 group-hover:text-primary transition-colors">{productName}</h3>
             <span className="text-lg font-bold text-primary whitespace-nowrap">₹{product.price.toFixed(0)}</span>
           </div>
           {product.category && (
@@ -119,7 +164,7 @@ const ProductCard = ({ product, shop }: { product: Product; shop: Shop }) => {
               {product.category}
             </span>
           )}
-          <p className="text-sm text-muted-foreground line-clamp-2">{product.description}</p>
+          <p className="text-sm text-muted-foreground line-clamp-2">{getLocalizedContent(product, 'description')}</p>
         </div>
 
         <div className="mt-5 pt-4 border-t border-border/50">
@@ -128,7 +173,7 @@ const ProductCard = ({ product, shop }: { product: Product; shop: Shop }) => {
             className="w-full bg-primary text-primary-foreground px-4 py-2.5 rounded-xl hover:bg-primary/90 transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-2 font-medium active:scale-[0.98]"
           >
             <MessageCircle className="w-4 h-4" />
-            Inquire on WhatsApp
+            {t('inquireWhatsapp') || 'Inquire on WhatsApp'}
           </button>
         </div>
       </div>
@@ -140,6 +185,7 @@ const ProductList = ({ products, shop }: ProductListProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
+  const { t } = useLanguage();
 
   const categories = useMemo(() => {
     const allCategories = products.map((p) => p.category).filter(Boolean) as string[];
@@ -171,7 +217,7 @@ const ProductList = ({ products, shop }: ProductListProps) => {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
             type="text"
-            placeholder="Search products..."
+            placeholder={t('searchExample')}
             className="w-full pl-9 pr-4 py-2 rounded-lg border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-shadow"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -186,7 +232,7 @@ const ProductList = ({ products, shop }: ProductListProps) => {
           >
             {categories.map((category) => (
               <option key={category} value={category}>
-                {category.charAt(0).toUpperCase() + category.slice(1)}
+                {category === 'all' ? t('allProducts') : category.charAt(0).toUpperCase() + category.slice(1)}
               </option>
             ))}
           </select>
@@ -204,7 +250,7 @@ const ProductList = ({ products, shop }: ProductListProps) => {
         </div>
       ) : (
         <div className="text-center py-12">
-          <p className="text-muted-foreground">No products found matching your criteria.</p>
+          <p className="text-muted-foreground">{t('noProductsMatched') || 'No products found.'}</p>
         </div>
       )}
 
@@ -215,10 +261,10 @@ const ProductList = ({ products, shop }: ProductListProps) => {
             disabled={currentPage === 1}
             className="px-4 py-2 rounded-lg border border-input bg-background hover:bg-accent hover:text-accent-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            Previous
+            {t('previous') || 'Previous'}
           </button>
           <span className="text-sm text-muted-foreground px-2">
-            Page {currentPage} of {totalPages}
+            {(t('pageOf') || '{page} / {total}').replace('{page}', currentPage.toString()).replace('{total}', totalPages.toString())}
           </span>
           <button
             onClick={() =>
@@ -227,7 +273,7 @@ const ProductList = ({ products, shop }: ProductListProps) => {
             disabled={currentPage === totalPages}
             className="px-4 py-2 rounded-lg border border-input bg-background hover:bg-accent hover:text-accent-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            Next
+            {t('next') || 'Next'}
           </button>
         </div>
       )}
