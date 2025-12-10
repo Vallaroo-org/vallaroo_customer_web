@@ -308,7 +308,7 @@ const CartPage = () => {
                                             <span>₹{shopTotal}</span>
                                         </div>
 
-                                        <div className="flex gap-3">
+                                        <div className="flex flex-col sm:flex-row gap-3">
                                             <Link
                                                 href={`/store/${shopId}`}
                                                 className="flex-1 py-3 px-4 rounded-xl border border-input bg-background font-medium text-center hover:bg-accent hover:text-accent-foreground transition-colors"
@@ -316,11 +316,11 @@ const CartPage = () => {
                                                 {t('continueShopping')}
                                             </Link>
                                             <button
-                                                className="flex-1 py-3 px-4 rounded-xl bg-green-600 text-white font-bold flex items-center justify-center gap-2 hover:bg-green-700 transition-colors shadow-sm"
+                                                className="flex-1 py-3 px-4 rounded-xl bg-green-600 text-white font-bold flex items-center justify-center gap-2 hover:bg-green-700 transition-colors shadow-sm whitespace-nowrap"
                                                 onClick={() => handleCheckoutClick(shopId, items)}
                                             >
-                                                <MessageCircle className="w-5 h-5" />
-                                                {t('checkoutWhatsApp')}
+                                                <MessageCircle className="w-5 h-5 flex-shrink-0" />
+                                                <span className="truncate">{t('checkoutWhatsApp')}</span>
                                             </button>
                                         </div>
                                     </div>
