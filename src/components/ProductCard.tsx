@@ -65,7 +65,9 @@ const ProductCard = ({ id, name, price, mrp, imageUrl, shopId, shopName, shopPho
                     {/* Add to Cart Button */}
                     <button
                         onClick={handleAddToCart}
-                        className="absolute bottom-2 right-2 p-2 rounded-full bg-background/90 text-foreground shadow-sm hover:bg-primary hover:text-primary-foreground transition-all opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 z-20"
+                        className="absolute bottom-2 right-2 p-2 rounded-full bg-background/90 text-foreground shadow-sm hover:bg-primary hover:text-primary-foreground transition-all 
+                        opacity-100 translate-y-0
+                        md:opacity-0 md:translate-y-2 md:group-hover:opacity-100 md:group-hover:translate-y-0 z-20"
                         title={t('addToCart')}
                     >
                         {isAdded ? <Check className="w-4 h-4" /> : <ShoppingCart className="w-4 h-4" />}

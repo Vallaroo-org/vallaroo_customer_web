@@ -122,52 +122,61 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Menu Overlay */}
+      {/* Mobile Menu & Backdrop */}
       {isMenuOpen && (
-        <div className={`md:hidden border-b border-border px-4 py-6 space-y-6 shadow-xl absolute w-full left-0 top-16 animate-in slide-in-from-top-2 z-40 ${resolvedTheme === 'dark' ? 'bg-black text-white' : 'bg-white text-black'
-          }`}>
-          <div className="space-y-4">
-            <button
-              onClick={() => { requestLocation(); setIsMenuOpen(false); }}
-              className="flex w-full items-center gap-2 px-2 py-2 text-sm font-medium hover:bg-accent rounded-md"
-            >
-              <MapPin className="w-4 h-4" />
-              <span className="truncate">
-                {placeName ? placeName : t('changeLocation')}
-              </span>
-            </button>
-            <Link
-              href="/"
-              onClick={() => setIsMenuOpen(false)}
-              className="block px-2 py-2 text-sm font-medium hover:bg-accent rounded-md"
-            >
-              {t('discover')}
-            </Link>
-            <Link
-              href="https://vallaroo.com"
-              onClick={() => setIsMenuOpen(false)}
-              className="block px-2 py-2 text-sm font-medium hover:bg-accent rounded-md"
-            >
-              {t('backToWebsite')}
-            </Link>
-            <Link
-              href={user ? "/profile" : "/signin"}
-              onClick={() => setIsMenuOpen(false)}
-              className="flex w-full items-center gap-2 px-2 py-2 text-sm font-medium hover:bg-accent rounded-md"
-            >
-              {user ? <User className="w-4 h-4" /> : <LogIn className="w-4 h-4" />}
-              <span>{user ? "My Profile" : "Sign In"}</span>
-            </Link>
-          </div>
+        <>
+          {/* Backdrop to close menu when clicking outside */}
+          <div
+            className="fixed inset-0 top-16 z-30 bg-black/50 backdrop-blur-[2px] md:hidden"
+            onClick={() => setIsMenuOpen(false)}
+            aria-hidden="true"
+          />
 
-          <div className="pt-4 border-t border-border flex items-center justify-between px-2">
-            <span className="text-sm font-medium text-muted-foreground">Settings</span>
-            <div className="flex gap-4">
-              <ThemeToggle />
-              <LanguageSwitcher />
+          <div className={`md:hidden border-b border-border px-4 py-6 space-y-6 shadow-xl absolute w-full left-0 top-16 animate-in slide-in-from-top-2 z-40 ${resolvedTheme === 'dark' ? 'bg-black text-white' : 'bg-white text-black'
+            }`}>
+            <div className="space-y-4">
+              <button
+                onClick={() => { requestLocation(); setIsMenuOpen(false); }}
+                className="flex w-full items-center gap-2 px-4 py-3 text-base font-medium hover:bg-accent rounded-md active:bg-accent/80 transition-colors"
+              >
+                <MapPin className="w-5 h-5 flex-shrink-0" />
+                <span className="truncate">
+                  {placeName ? placeName : t('changeLocation')}
+                </span>
+              </button>
+              <Link
+                href="/"
+                onClick={() => setIsMenuOpen(false)}
+                className="block px-4 py-3 text-base font-medium hover:bg-accent rounded-md active:bg-accent/80 transition-colors"
+              >
+                {t('discover')}
+              </Link>
+              <Link
+                href="https://vallaroo.com"
+                onClick={() => setIsMenuOpen(false)}
+                className="block px-4 py-3 text-base font-medium hover:bg-accent rounded-md active:bg-accent/80 transition-colors"
+              >
+                {t('backToWebsite')}
+              </Link>
+              <Link
+                href={user ? "/profile" : "/signin"}
+                onClick={() => setIsMenuOpen(false)}
+                className="flex w-full items-center gap-2 px-4 py-3 text-base font-medium hover:bg-accent rounded-md active:bg-accent/80 transition-colors"
+              >
+                {user ? <User className="w-5 h-5 flex-shrink-0" /> : <LogIn className="w-5 h-5 flex-shrink-0" />}
+                <span>{user ? "My Profile" : "Sign In"}</span>
+              </Link>
+            </div>
+
+            <div className="pt-4 border-t border-border flex items-center justify-between px-2">
+              <span className="text-sm font-medium text-muted-foreground">Settings</span>
+              <div className="flex gap-4">
+                <ThemeToggle />
+                <LanguageSwitcher />
+              </div>
             </div>
           </div>
-        </div>
+        </>
       )}
     </nav>
   );

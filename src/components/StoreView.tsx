@@ -63,7 +63,7 @@ const StoreView = ({ store, products }: StoreViewProps) => {
     return (
         <div className="bg-background min-h-screen pb-12">
             {/* Hero Section */}
-            <div className="relative w-full h-64 sm:h-80 md:h-96 bg-muted overflow-hidden">
+            <div className="relative w-full h-48 sm:h-80 md:h-96 bg-muted overflow-hidden">
                 {store.cover_image_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -79,10 +79,10 @@ const StoreView = ({ store, products }: StoreViewProps) => {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent"></div>
             </div>
 
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 -mt-24">
-                <div className="bg-background/80 backdrop-blur-md rounded-2xl shadow-xl border border-white/20 p-6 flex flex-col sm:flex-row items-start sm:items-end gap-6">
-                    {/* Logo */}
-                    <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-background bg-card shadow-md overflow-hidden flex-shrink-0 -mt-16 sm:-mt-0 relative z-10">
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 -mt-16 sm:-mt-24">
+                <div className="bg-background/80 backdrop-blur-md rounded-2xl shadow-xl border border-white/20 p-4 sm:p-6 flex flex-col sm:flex-row items-center sm:items-end gap-4 sm:gap-6 text-center sm:text-left">
+                    {/* Logo - Centered on mobile, absolute overlap adjusted */}
+                    <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-background bg-card shadow-md overflow-hidden flex-shrink-0 -mt-16 sm:mt-0 relative z-10">
                         {store.logo_url ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
@@ -206,8 +206,8 @@ const StoreView = ({ store, products }: StoreViewProps) => {
                                         product.image_urls?.[0] && (
                                             <div key={product.id} className="aspect-square relative rounded-xl overflow-hidden group cursor-pointer shadow-sm hover:shadow-md transition-all">
                                                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                <img src={product.image_urls[0]} alt={getLocalizedContent(product, 'name')} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
+                                                <img src={product.image_urls[0]} alt={getLocalizedContent(product, 'name')} className="w-full h-full object-cover transition-transform duration-500 md:group-hover:scale-110" />
+                                                <div className="absolute inset-0 bg-black/0 md:group-hover:bg-black/10 transition-colors"></div>
                                             </div>
                                         )
                                     ))}

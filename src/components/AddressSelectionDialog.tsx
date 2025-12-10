@@ -105,9 +105,8 @@ export default function AddressSelectionDialog({ isOpen, onClose, onSelect }: Pr
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-            <div className={`w-full max-w-md rounded-2xl shadow-xl overflow-hidden max-h-[90vh] flex flex-col ${resolvedTheme === 'dark' ? 'bg-black text-white' : 'bg-white text-black'
-                }`}>
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-sm animate-in fade-in" onClick={onClose}>
+            <div className="bg-background w-full sm:max-w-md md:max-w-lg rounded-t-xl sm:rounded-xl shadow-2xl max-h-[90vh] flex flex-col animate-in slide-in-from-bottom-5" onClick={(e) => e.stopPropagation()}>
                 {/* Header */}
                 <div className="p-4 border-b border-border flex justify-between items-center bg-muted/20">
                     <h2 className="font-bold text-lg">
