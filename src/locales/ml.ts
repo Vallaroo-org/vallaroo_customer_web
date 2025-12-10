@@ -12,6 +12,7 @@ export const ml = {
     addToCart: "കാർട്ടിലേക്ക് ചേർക്കുക",
     addedToCart: "കാർട്ടിലേക്ക് ചേർത്തു",
     enquireOnWhatsApp: "വാട്സാപ്പിൽ അന്വേഷിക്കുക",
+    orderViaWhatsApp: "വാട്‌സ്ആപ്പിലൂടെ ഓർഡർ ചെയ്യുക",
     checkoutWhatsApp: 'വാട്‌സ്ആപ്പിലൂടെ ഓർഡർ ചെയ്യുക',
     pleaseSignInToOrder: 'ഓർഡർ ചെയ്യുന്നതിന് ദയവായി സൈൻ ഇൻ ചെയ്യുക.',
     totalAmount: "ആകെ തുക",
