@@ -126,14 +126,15 @@ const Navbar = () => {
       {isMenuOpen && (
         <>
           {/* Backdrop to close menu when clicking outside - Covers entire screen */}
+          {/* Backdrop to close menu when clicking outside - Covers entire screen */}
           <div
-            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-[2px] md:hidden"
+            className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-[2px] md:hidden"
             onClick={() => setIsMenuOpen(false)}
             aria-hidden="true"
           />
 
           {/* Menu Content */}
-          <div className={`md:hidden fixed left-0 top-16 w-full border-b border-border px-4 py-6 space-y-6 shadow-xl animate-in slide-in-from-top-2 z-50 ${resolvedTheme === 'dark' ? 'bg-black text-white' : 'bg-white text-black'
+          <div className={`md:hidden fixed left-0 top-16 w-full border-b border-border px-4 py-6 space-y-6 shadow-xl animate-in slide-in-from-top-2 z-[101] ${resolvedTheme === 'dark' ? 'bg-black text-white' : 'bg-white text-black'
             }`}>
             <div className="space-y-4">
               <button

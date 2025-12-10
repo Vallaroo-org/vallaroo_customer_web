@@ -1,20 +1,21 @@
-'use client';
-
 import React, { useEffect, useState } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import { supabase } from '@/lib/supabaseClient';
 import AddressCard from '@/components/AddressCard';
 import AddressForm from '@/components/AddressForm';
-
 import Navbar from '@/components/Navbar';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function AddressesPage() {
     const { t } = useLanguage();
+    const router = useRouter();
+    const searchParams = useSearchParams();
     const [addresses, setAddresses] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [userId, setUserId] = useState<string | null>(null);
-    const [showForm, setShowForm] = useState(false);
     const [editingAddress, setEditingAddress] = useState<any>(null);
+
+    const showForm = searchParams?.get('action') === 'add' || searchParams?.get('action') === 'edit';
 
     useEffect(() => {
         fetchSession();
@@ -49,6 +50,20 @@ export default function AddressesPage() {
         if (userId) fetchAddresses(userId);
     };
 
+    const openAddForm = () => {
+        setEditingAddress(null);
+        router.push('/profile/addresses?action=add');
+    };
+
+    const openEditForm = (address: any) => {
+        setEditingAddress(address);
+        router.push('/profile/addresses?action=edit');
+    };
+
+    const closeForm = () => {
+        router.push('/profile/addresses');
+    };
+
     if (loading) return <div className="p-8 text-center text-muted-foreground">Loading...</div>;
 
     if (!userId) {
@@ -75,7 +90,7 @@ export default function AddressesPage() {
                         <h1 className="text-2xl font-bold text-foreground">{t('savedAddresses')}</h1>
                         {!showForm && (
                             <button
-                                onClick={() => { setEditingAddress(null); setShowForm(true); }}
+                                onClick={openAddForm}
                                 className="bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90"
                             >
                                 + {t('addNewAddress')}
@@ -87,7 +102,7 @@ export default function AddressesPage() {
                         <div className="bg-card text-card-foreground rounded-xl shadow-sm p-6 border border-border">
                             <div className="flex items-center gap-3 mb-4">
                                 <button
-                                    onClick={() => setShowForm(false)}
+                                    onClick={closeForm}
                                     className="p-1 rounded-full hover:bg-accent transition-colors"
                                     aria-label="Back to addresses"
                                 >
@@ -101,8 +116,8 @@ export default function AddressesPage() {
                                 key={editingAddress ? editingAddress.id : 'new-address'}
                                 userId={userId}
                                 initialData={editingAddress}
-                                onSuccess={() => { setShowForm(false); fetchAddresses(userId); }}
-                                onCancel={() => setShowForm(false)}
+                                onSuccess={() => { closeForm(); fetchAddresses(userId); }}
+                                onCancel={closeForm}
                             />
                         </div>
                     ) : (
@@ -116,7 +131,7 @@ export default function AddressesPage() {
                                     <AddressCard
                                         key={addr.id}
                                         address={addr}
-                                        onEdit={(a) => { setEditingAddress(a); setShowForm(true); }}
+                                        onEdit={openEditForm}
                                         onDelete={handleDelete}
                                     />
                                 ))
