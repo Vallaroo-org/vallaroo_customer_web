@@ -70,16 +70,19 @@ export default function StoryViewer({ stories, onClose }: StoryViewerProps) {
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-        // Record View
-        useEffect(() => {
-            const recordView = async () => {
-                const currentStory = stories[currentIndex];
-                if (!currentStory) return;
+    }, [currentIndex]); // Simplified dependency
 
-                const { supabase } = await import('@/lib/supabaseClient');
-                const { data: { user } } = await supabase.auth.getUser();
+    // Record View
+    useEffect(() => {
+        const recordView = async () => {
+            const currentStory = stories[currentIndex];
+            if (!currentStory) return;
 
-                if (user) {
+            const { supabase } = await import('@/lib/supabaseClient');
+            const { data: { user } } = await supabase.auth.getUser();
+
+            if (user) {
+                try {
                     await supabase
                         .from('story_views')
                         .insert({
@@ -87,16 +90,14 @@ export default function StoryViewer({ stories, onClose }: StoryViewerProps) {
                             viewer_id: user.id
                         })
                         .select()
-                        .maybeSingle(); // In case of duplicate (handled by UNIQUE constraint but nice to be safe)
-                    // Actually .ignore() might be better if using Supabase client directly, but standard insert can throw. 
-                    // To efficiently ignore, we use onConflict if the client supports it, or just catch error.
-                    // Simple insert with no error handling is fine as unique constraint will block duplicates.
+                        .maybeSingle();
+                } catch (error) {
+                    console.error('Error recording view:', error);
                 }
-            };
-            recordView();
-        }, [currentIndex, stories]);
-
-    }, [currentIndex]);
+            }
+        };
+        recordView();
+    }, [currentIndex, stories]);
 
     const currentStory = stories[currentIndex];
 
