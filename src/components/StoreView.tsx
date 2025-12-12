@@ -1,21 +1,114 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ProductList from './ProductList';
+import StoryViewer from './StoryViewer';
 import StoreDetails from './StoreDetails';
 
 import { useLanguage } from '@/context/LanguageContext';
+import { supabase } from '@/lib/supabaseClient';
+
+interface Story {
+    id: string;
+    media_url: string;
+    media_type: string;
+}
 
 interface StoreViewProps {
     store: any;
     products: any[];
+    stories: Story[];
 }
 
-const StoreView = ({ store, products }: StoreViewProps) => {
+const StoreView = ({ store, products, stories }: StoreViewProps) => {
     const { t, locale } = useLanguage();
     const [activeTab, setActiveTab] = useState<'products' | 'about' | 'gallery'>('products');
+    const [showStories, setShowStories] = useState(false);
 
     const [copied, setCopied] = useState(false);
+    const [isFollowing, setIsFollowing] = useState(false);
+    const [isFollowLoading, setIsFollowLoading] = useState(true);
+    const [user, setUser] = useState<any>(null);
+
+    // Initial check for follow status
+    useEffect(() => {
+        const checkFollowStatus = async () => {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                const currentUser = session?.user;
+                setUser(currentUser);
+
+                if (currentUser) {
+                    const { data, error } = await supabase
+                        .from('shop_followers')
+                        .select('id')
+                        .eq('shop_id', store.id)
+                        .eq('follower_id', currentUser.id)
+                        .maybeSingle();
+
+                    if (error) {
+                        console.error('Error checking follow status:', error);
+                    } else {
+                        setIsFollowing(!!data);
+                    }
+                }
+            } catch (err) {
+                console.error('Unexpected error checking follow status:', err);
+            } finally {
+                setIsFollowLoading(false);
+            }
+        };
+        checkFollowStatus();
+    }, [store.id]);
+
+    const handleFollow = async () => {
+        if (!user) {
+            // Redirect to login or show auth modal
+            // Using window.location.href ensures full reload which might be needed for auth state
+            window.location.href = `/signin?redirect=/store/${store.id}`;
+            return;
+        }
+
+        setIsFollowLoading(true);
+
+        try {
+            if (isFollowing) {
+                // Unfollow
+                const { error } = await supabase
+                    .from('shop_followers')
+                    .delete()
+                    .eq('shop_id', store.id)
+                    .eq('follower_id', user.id);
+
+                if (error) {
+                    console.error('Error unfollowing:', error);
+                    alert('Failed to unfollow. Please try again.');
+                } else {
+                    setIsFollowing(false);
+                }
+            } else {
+                // Follow
+                const { error } = await supabase
+                    .from('shop_followers')
+                    .insert({
+                        shop_id: store.id,
+                        follower_id: user.id
+                    });
+
+                if (error) {
+                    console.error('Error following:', error);
+                    alert('Failed to follow. Please try again.');
+                } else {
+                    setIsFollowing(true);
+                }
+            }
+        } catch (err) {
+            console.error('Unexpected error handling follow:', err);
+            alert('An unexpected error occurred.');
+        } finally {
+            setIsFollowLoading(false);
+        }
+    };
 
     const getLocalizedContent = (item: any, field: string) => {
         if (!item) return '';
@@ -82,19 +175,24 @@ const StoreView = ({ store, products }: StoreViewProps) => {
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 -mt-16 sm:-mt-24">
                 <div className="bg-background/80 backdrop-blur-md rounded-2xl shadow-xl border border-white/20 p-4 sm:p-6 flex flex-col sm:flex-row items-center sm:items-end gap-4 sm:gap-6 text-center sm:text-left">
                     {/* Logo - Centered on mobile, absolute overlap adjusted */}
-                    <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-background bg-card shadow-md overflow-hidden flex-shrink-0 -mt-16 sm:mt-0 relative z-10">
-                        {store.logo_url ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                                src={store.logo_url}
-                                alt={shopName}
-                                className="w-full h-full object-cover"
-                            />
-                        ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground text-3xl font-bold">
-                                {shopName.charAt(0).toUpperCase()}
-                            </div>
-                        )}
+                    <div
+                        className={`w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-background bg-card shadow-md overflow-hidden flex-shrink-0 -mt-16 sm:mt-0 relative z-10 ${stories.length > 0 ? 'cursor-pointer p-1 border-transparent bg-gradient-to-tr from-purple-500 to-orange-500' : ''}`}
+                        onClick={() => stories.length > 0 && setShowStories(true)}
+                    >
+                        <div className={`w-full h-full rounded-full overflow-hidden ${stories.length > 0 ? 'border-2 border-background' : ''}`}>
+                            {store.logo_url ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                    src={store.logo_url}
+                                    alt={shopName}
+                                    className="w-full h-full object-cover"
+                                />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground text-3xl font-bold">
+                                    {shopName.charAt(0).toUpperCase()}
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     {/* Info */}
@@ -157,6 +255,29 @@ const StoreView = ({ store, products }: StoreViewProps) => {
                             className="flex-1 sm:flex-none border border-input bg-background hover:bg-accent hover:text-accent-foreground px-5 py-2.5 rounded-xl font-semibold transition-all shadow-sm"
                         >
                             {copied ? t('copied') : t('share')}
+                        </button>
+
+                        <button
+                            onClick={handleFollow}
+                            disabled={isFollowLoading}
+                            className={`flex-1 sm:flex-none border px-5 py-2.5 rounded-xl font-semibold transition-all shadow-sm flex items-center justify-center gap-2 ${isFollowing
+                                ? 'bg-primary text-primary-foreground border-primary hover:bg-primary/90'
+                                : 'border-primary text-primary hover:bg-primary/10 bg-background'
+                                }`}
+                        >
+                            {isFollowLoading ? (
+                                <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                            ) : isFollowing ? (
+                                <>
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                    {t('following') || 'Following'}
+                                </>
+                            ) : (
+                                <>
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                                    {t('follow') || 'Follow'}
+                                </>
+                            )}
                         </button>
                     </div>
                 </div>
@@ -265,6 +386,13 @@ const StoreView = ({ store, products }: StoreViewProps) => {
                     )}
                 </div>
             </div>
+
+            {showStories && (
+                <StoryViewer
+                    stories={stories}
+                    onClose={() => setShowStories(false)}
+                />
+            )}
         </div>
     );
 };

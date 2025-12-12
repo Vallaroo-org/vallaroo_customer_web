@@ -5,6 +5,7 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import ShopCard from '../components/ShopCard';
 import ProductCard from '../components/ProductCard';
+import FollowingStories from '../components/FollowingStories';
 import { fetchShops, fetchProducts, fetchCategories, Shop, Product, Category } from '../lib/api';
 import { Search, MapPin } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
@@ -141,6 +142,8 @@ const DiscoverPage = () => {
               </button>
             )}
           </div>
+
+          <FollowingStories />
 
           {/* Search Bar */}
           <div className="relative max-w-lg">

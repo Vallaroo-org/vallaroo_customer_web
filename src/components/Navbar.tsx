@@ -48,14 +48,14 @@ const Navbar = () => {
             {mounted ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={resolvedTheme === 'dark' ? "/vallaroo-logo-white.png" : "/vallaroo-logo-black.png"}
+                src={resolvedTheme === 'dark' ? "/vallaroo_dark_mode.png" : "/vallaroo_light_mode.png"}
                 alt="Vallaroo"
                 className="h-8"
               />
             ) : (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src="/vallaroo-logo-black.png"
+                src="/vallaroo_light_mode.png"
                 alt="Vallaroo"
                 className="h-8"
               />

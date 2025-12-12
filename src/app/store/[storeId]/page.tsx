@@ -27,6 +27,13 @@ export default async function StorePage(props: any) {
     .select('*')
     .eq('shop_id', storeId);
 
+  const { data: stories } = await supabase
+    .from('stories')
+    .select('*')
+    .eq('shop_id', storeId)
+    .gt('expires_at', new Date().toISOString())
+    .order('created_at', { ascending: true });
+
   if (storeError || !store) {
     return (
       <div className="flex min-h-screen flex-col bg-background">
@@ -46,7 +53,7 @@ export default async function StorePage(props: any) {
     <div className="flex min-h-screen flex-col bg-background">
       <Navbar />
       <main className="flex-1">
-        <StoreView store={store} products={products || []} />
+        <StoreView store={store} products={products || []} stories={stories || []} />
       </main>
       <Footer />
     </div>
