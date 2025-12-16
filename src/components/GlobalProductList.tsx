@@ -109,6 +109,7 @@ const GlobalProductList = ({ initialProducts = [] }: GlobalProductListProps) => 
 
     const debouncedSearch = useDebounce(searchTerm, 500);
     const observerTarget = useRef<HTMLDivElement>(null);
+    const hasInitiallyLoaded = useRef(false);
     const { t } = useLanguage();
 
     // Fetch Data Function (Global - no shopId)
@@ -142,10 +143,22 @@ const GlobalProductList = ({ initialProducts = [] }: GlobalProductListProps) => 
 
     // Effect: Search or Sort changed -> Reset and Fetch
     useEffect(() => {
-        if (debouncedSearch === '' && sortBy === 'newest' && page === 1 && products === initialProducts) {
-            if (initialProducts.length > 0) setPage(2);
+        // On first render with default values and no initialProducts, fetch data
+        if (!hasInitiallyLoaded.current && debouncedSearch === '' && sortBy === 'newest' && initialProducts.length === 0) {
+            hasInitiallyLoaded.current = true;
+            loadProducts(true);
             return;
         }
+
+        // If we have initialProducts and haven't changed filters, use them
+        if (debouncedSearch === '' && sortBy === 'newest' && page === 1 && products === initialProducts && initialProducts.length > 0) {
+            hasInitiallyLoaded.current = true;
+            setPage(2);
+            return;
+        }
+
+        // Otherwise, fetch new data
+        hasInitiallyLoaded.current = true;
         loadProducts(true);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [debouncedSearch, sortBy]);

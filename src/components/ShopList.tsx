@@ -102,6 +102,7 @@ const ShopList = ({ initialShops = [] }: ShopListProps) => {
 
     const debouncedSearch = useDebounce(searchTerm, 500);
     const observerTarget = useRef<HTMLDivElement>(null);
+    const hasInitiallyLoaded = useRef(false);
     const { t } = useLanguage();
 
     // Fetch Data Function
@@ -134,10 +135,22 @@ const ShopList = ({ initialShops = [] }: ShopListProps) => {
 
     // Effect: Search or Sort changed -> Reset and Fetch
     useEffect(() => {
-        if (debouncedSearch === '' && sortBy === 'newest' && page === 1 && shops === initialShops) {
-            if (initialShops.length > 0) setPage(2);
+        // On first render with default values and no initialShops, fetch data
+        if (!hasInitiallyLoaded.current && debouncedSearch === '' && sortBy === 'newest' && initialShops.length === 0) {
+            hasInitiallyLoaded.current = true;
+            loadShops(true);
             return;
         }
+
+        // If we have initialShops and haven't changed filters, use them
+        if (debouncedSearch === '' && sortBy === 'newest' && page === 1 && shops === initialShops && initialShops.length > 0) {
+            hasInitiallyLoaded.current = true;
+            setPage(2);
+            return;
+        }
+
+        // Otherwise, fetch new data
+        hasInitiallyLoaded.current = true;
         loadShops(true);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [debouncedSearch, sortBy]);
