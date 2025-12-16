@@ -21,6 +21,7 @@ export interface Product {
     category_id?: string;
     is_active?: boolean;
     created_at?: string;
+    mrp?: number;
     shop_id?: string;
     shops?: {
         id: string;
@@ -28,6 +29,8 @@ export interface Product {
         name_ml?: string;
         phone_number?: string;
         logo_url?: string;
+        latitude?: number;
+        longitude?: number;
     };
 }
 
@@ -55,8 +58,8 @@ export async function getProducts({
 
     // Select fields - include shops join for global view
     const selectFields = shopId
-        ? 'id, name, name_ml, price, description, description_ml, image_urls, category_id, is_active, created_at'
-        : 'id, name, name_ml, price, description, description_ml, image_urls, category_id, is_active, created_at, shop_id, shops (id, name, name_ml, phone_number, logo_url)';
+        ? 'id, name, name_ml, price, mrp, description, description_ml, image_urls, category_id, is_active, created_at'
+        : 'id, name, name_ml, price, mrp, description, description_ml, image_urls, category_id, is_active, created_at, shop_id, shops!inner (id, name, name_ml, phone_number, logo_url, is_verified, is_hidden, latitude, longitude)';
 
     let query = supabase
         .from('products')
@@ -66,6 +69,11 @@ export async function getProducts({
     // Filter by shop only if shopId is provided
     if (shopId) {
         query = query.eq('shop_id', shopId);
+    } else {
+        // For global product search, only show products from verified and visible shops
+        query = query
+            .eq('shops.is_verified', true)
+            .eq('shops.is_hidden', false);
     }
 
     // Search

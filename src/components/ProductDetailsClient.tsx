@@ -69,6 +69,15 @@ const ProductDetailsClient = ({ product }: ProductDetailsClientProps) => {
     const incrementQuantity = () => setQuantity(prev => prev + 1);
     const decrementQuantity = () => setQuantity(prev => prev > 1 ? prev - 1 : 1);
 
+    // Helper for Indian Currency Formatting
+    const formatPrice = (amount: number) => {
+        return new Intl.NumberFormat('en-IN', {
+            style: 'currency',
+            currency: 'INR',
+            maximumFractionDigits: 0,
+        }).format(amount);
+    };
+
     const discount = product.mrp > product.price ? Math.round(((product.mrp - product.price) / product.mrp) * 100) : 0;
     const productName = getLocalizedContent(product, 'name');
     const productDescription = getLocalizedContent(product, 'description');
@@ -98,10 +107,10 @@ const ProductDetailsClient = ({ product }: ProductDetailsClientProps) => {
                         className={`absolute top-3 right-3 p-2 rounded-full shadow-md transition-all ${isWishlisted
                             ? 'bg-red-500 text-white'
                             : 'bg-background/90 text-muted-foreground hover:text-red-500'
-                            } `}
+                            }`}
                         title={isWishlisted ? t('removeFromWishlist') || 'Remove from Wishlist' : t('addToWishlist') || 'Add to Wishlist'}
                     >
-                        <Heart className={`w - 5 h - 5 ${isWishlisted ? 'fill-current' : ''} `} />
+                        <Heart className={`w-5 h-5 ${isWishlisted ? 'fill-current' : ''}`} />
                     </button>
                 </div>
                 {product.image_urls && product.image_urls.length > 1 && (
@@ -110,12 +119,12 @@ const ProductDetailsClient = ({ product }: ProductDetailsClientProps) => {
                             <button
                                 key={index}
                                 onClick={() => setSelectedImage(url)}
-                                className={`relative h - 20 w - 20 flex - shrink - 0 overflow - hidden rounded - md border - 2 ${selectedImage === url ? 'border-primary' : 'border-transparent'} `}
+                                className={`relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-md border-2 ${selectedImage === url ? 'border-primary' : 'border-transparent'}`}
                             >
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
                                     src={url}
-                                    alt={`${productName} thumbnail ${index + 1} `}
+                                    alt={`${productName} thumbnail ${index + 1}`}
                                     className="h-full w-full object-cover"
                                 />
                             </button>
@@ -130,7 +139,7 @@ const ProductDetailsClient = ({ product }: ProductDetailsClientProps) => {
                     <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl mb-2 capitalize">{productName}</h1>
                     <div className="flex items-center gap-2 text-muted-foreground">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-                        <Link href={`/ store / ${product.shop_id} `} className="text-sm font-medium hover:text-primary hover:underline transition-colors">
+                        <Link href={`/store/${product.shop_id}`} className="text-sm font-medium hover:text-primary hover:underline transition-colors">
                             {shopName}
                         </Link>
                     </div>
@@ -138,11 +147,11 @@ const ProductDetailsClient = ({ product }: ProductDetailsClientProps) => {
 
                 <div className="mb-6">
                     <div className="flex items-baseline gap-4">
-                        <span className="text-3xl font-bold text-primary">₹{product.price}</span>
+                        <span className="text-3xl font-bold text-primary">{formatPrice(product.price)}</span>
                         {product.mrp > product.price && (
                             <>
-                                <span className="text-xl text-muted-foreground line-through">₹{product.mrp}</span>
-                                <span className="rounded bg-green-100 px-2 py-1 text-sm font-semibold text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                                <span className="text-xl text-muted-foreground line-through">{formatPrice(product.mrp)}</span>
+                                <span className="rounded bg-green-600 px-2 py-1 text-sm font-semibold text-white shadow-sm">
                                     {discount}{t('off')}
                                 </span>
                             </>
@@ -177,7 +186,7 @@ const ProductDetailsClient = ({ product }: ProductDetailsClientProps) => {
                             </button>
                         </div>
                         <span className="text-muted-foreground text-sm">
-                            {t('total') || 'Total'}: <span className="font-bold text-foreground">₹{product.price * quantity}</span>
+                            {t('total') || 'Total'}: <span className="font-bold text-foreground">{formatPrice(product.price * quantity)}</span>
                         </span>
                     </div>
                 </div>
@@ -187,7 +196,7 @@ const ProductDetailsClient = ({ product }: ProductDetailsClientProps) => {
                     <div className="flex flex-col sm:flex-row gap-3">
                         <button
                             onClick={handleAddToCart}
-                            className="flex-1 rounded-xl border-2 border-primary bg-background px-6 py-3 text-base font-bold text-primary hover:bg-primary/10 transition-all flex items-center justify-center gap-2 min-h-[3rem]"
+                            className="flex-1 rounded-xl bg-slate-900 dark:bg-slate-100 px-6 py-3 text-base font-bold text-white dark:text-slate-900 shadow-md shadow-slate-900/10 hover:shadow-lg hover:shadow-slate-900/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 min-h-[3rem]"
                         >
                             {isAdded ? (
                                 <>
@@ -204,9 +213,9 @@ const ProductDetailsClient = ({ product }: ProductDetailsClientProps) => {
 
                         <button
                             onClick={handleBuyNow}
-                            className="flex-1 rounded-xl bg-gradient-to-r from-primary to-primary/90 px-6 py-3 text-base font-bold text-primary-foreground shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 min-h-[3rem]"
+                            className="flex-1 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-700 px-6 py-3 text-base font-bold text-white shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 min-h-[3rem]"
                         >
-                            <Zap className="w-5 h-5 flex-shrink-0" />
+                            <Zap className="w-5 h-5 flex-shrink-0 fill-current" />
                             <span>{t('buyNow') || 'Buy Now'}</span>
                         </button>
                     </div>

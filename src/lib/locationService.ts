@@ -1,15 +1,19 @@
-import { Shop } from './api';
-
 export interface DistanceResult {
     [shopId: string]: string; // Distance in km formatted as string
 }
 
 const OSRM_API_BASE = 'http://router.project-osrm.org/table/v1/driving';
 
+interface LocationShop {
+    id: string;
+    latitude?: number;
+    longitude?: number;
+}
+
 export const getDrivingDistances = async (
     startLat: number,
     startLng: number,
-    shops: Shop[]
+    shops: LocationShop[]
 ): Promise<DistanceResult> => {
     const results: DistanceResult = {};
 
@@ -78,7 +82,12 @@ export const getDrivingDistances = async (
 export const getPlaceName = async (lat: number, lng: number): Promise<string | null> => {
     try {
         const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=10`
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=10`,
+            {
+                headers: {
+                    'User-Agent': 'VallarooWebApp/1.0'
+                }
+            }
         );
 
         if (!response.ok) return null;
@@ -93,6 +102,43 @@ export const getPlaceName = async (lat: number, lng: number): Promise<string | n
         return null;
     } catch (error) {
         console.error('Error fetching place name:', error);
+        return null;
+    }
+};
+
+export interface GeocodeResult {
+    latitude: number;
+    longitude: number;
+    displayName: string;
+}
+
+export const geocodeLocation = async (locationName: string): Promise<GeocodeResult | null> => {
+    try {
+        const response = await fetch(
+            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(locationName)}&limit=1`,
+            {
+                headers: {
+                    'User-Agent': 'VallarooWebApp/1.0'
+                }
+            }
+        );
+
+        if (!response.ok) return null;
+
+        const data = await response.json();
+
+        if (data && data.length > 0) {
+            const result = data[0];
+            return {
+                latitude: parseFloat(result.lat),
+                longitude: parseFloat(result.lon),
+                displayName: result.display_name
+            };
+        }
+
+        return null;
+    } catch (error) {
+        console.error('Error geocoding location:', error);
         return null;
     }
 };

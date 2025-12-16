@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, Filter, Share2, MessageCircle, ShoppingCart, Check, Loader2 } from 'lucide-react';
+import { Search, Filter, Share2, MessageCircle, ShoppingCart, Check, Loader2, Heart } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useLanguage } from '../context/LanguageContext';
+import { useWishlist } from '../context/WishlistContext';
 import { getProducts, type Product as ActionProduct, type SortOption } from '../app/actions/get-products';
 
 // Interface matching the Action's return type + UI needs
@@ -29,12 +30,14 @@ const ProductCard = ({ product, shop }: { product: Product; shop: Shop }) => {
   const addingRef = useRef(false);
   const router = useRouter();
   const { addToCart } = useCart();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const { locale, t } = useLanguage();
 
+  const isWishlisted = isInWishlist(product.id);
+
   const getLocalizedContent = (item: any, field: string) => {
+    // ... (same as before)
     if (!item) return '';
-    // If current locale is Malayalam ('ml') and we have a value, use it.
-    // Fallback to English/default field if ml content is missing.
     if (locale === 'ml' && item[`${field}_ml`]) {
       return item[`${field}_ml`];
     }
@@ -43,17 +46,13 @@ const ProductCard = ({ product, shop }: { product: Product; shop: Shop }) => {
 
   const shopName = getLocalizedContent(shop, 'name');
   const productName = getLocalizedContent(product, 'name');
-  const productDesc = getLocalizedContent(product, 'description');
 
   const handleAddToCart = (e: React.MouseEvent) => {
+    // ... (keep existing Logic)
     e.stopPropagation();
     e.preventDefault();
 
-    // Guard using useRef
-    if (addingRef.current) {
-      return;
-    }
-
+    if (addingRef.current) return;
     addingRef.current = true;
 
     addToCart({
@@ -69,21 +68,25 @@ const ProductCard = ({ product, shop }: { product: Product; shop: Shop }) => {
     });
 
     setIsAdded(true);
-
-    // Reset guard immediately
-    setTimeout(() => {
-      addingRef.current = false;
-    }, 100);
-
-    // Reset visual feedback after 2s
-    setTimeout(() => {
-      setIsAdded(false);
-    }, 2000);
+    setTimeout(() => { addingRef.current = false; }, 100);
+    setTimeout(() => { setIsAdded(false); }, 2000);
   };
+
+  const toggleWishlist = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isWishlisted) {
+      removeFromWishlist(product.id);
+    } else {
+      addToWishlist(product);
+    }
+  };
+
+  // ... (Keep other handlers like Inquire/Share)
 
   const handleInquire = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const baseUrl = 'https://app.vallaroo.com';
+    const baseUrl = window.location.origin;
     const productLink = `${baseUrl}/product/${product.id}`;
     const whatsappMessage = encodeURIComponent(`I'm interested in your product: ${product.name}. More details: ${productLink}`);
 
@@ -95,7 +98,7 @@ const ProductCard = ({ product, shop }: { product: Product; shop: Shop }) => {
 
   const handleShare = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const baseUrl = 'https://app.vallaroo.com';
+    const baseUrl = window.location.origin;
     const productLink = `${baseUrl}/product/${product.id}`;
     navigator.clipboard.writeText(productLink).then(() => {
       setCopied(true);
@@ -109,13 +112,30 @@ const ProductCard = ({ product, shop }: { product: Product; shop: Shop }) => {
 
   const hasWhatsapp = !!shop.whatsapp_number;
 
+  // Calculate Discount
+  const mrp = product.mrp || 0;
+  const hasDiscount = mrp > product.price;
+  const discountPercent = hasDiscount
+    ? Math.round(((mrp - product.price) / mrp) * 100)
+    : 0;
+  const savedAmount = hasDiscount ? mrp - product.price : 0;
+
+  // Helper for Indian Currency Formatting
+  const formatPrice = (amount: number) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+
   return (
     <div
-      className="bg-card text-card-foreground rounded-2xl border border-border/50 shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer group flex flex-col h-full overflow-hidden"
+      className="bg-card text-card-foreground rounded-xl border border-border/50 shadow-sm hover:shadow-2xl hover:border-primary/20 transition-all duration-300 cursor-pointer group flex flex-col h-full overflow-hidden group-hover:-translate-y-1"
       onClick={handleCardClick}
     >
-      {/* Aspect ratio fixed to something consistent, e.g. 4/5 or Square */}
-      <div className="relative w-full aspect-[4/5] bg-muted/50 flex items-center justify-center overflow-hidden">
+      {/* Edge-to-Edge Image */}
+      <div className="relative w-full aspect-square bg-muted flex items-center justify-center overflow-hidden">
         {selectedImage ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -126,51 +146,90 @@ const ProductCard = ({ product, shop }: { product: Product; shop: Shop }) => {
         ) : (
           <div className="flex flex-col items-center justify-center text-muted-foreground/50">
             <svg className="w-12 h-12 mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-            <span className="text-sm font-medium">No Image</span>
           </div>
         )}
 
-        {/* Quick Actions Overlay */}
-        <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 translate-x-4 group-hover:translate-x-0">
+        {/* Discount Badge */}
+        {hasDiscount && discountPercent > 0 && (
+          <div className="absolute top-3 left-3 z-10">
+            <span className="bg-red-600 text-white text-[10px] sm:text-xs font-bold px-2 py-1 rounded-md shadow-md animate-in fade-in zoom-in duration-300">
+              {discountPercent}% OFF
+            </span>
+          </div>
+        )}
+
+        {/* Wishlist Button */}
+        <div className="absolute top-3 right-3 z-20">
+          <button
+            onClick={toggleWishlist}
+            className="p-2.5 rounded-full bg-black/20 backdrop-blur-md hover:bg-white transition-all duration-300 group/heart border border-white/10"
+          >
+            <Heart
+              className={`w-4 h-4 transition-colors ${isWishlisted
+                ? 'fill-red-500 text-red-500'
+                : 'text-white group-hover/heart:text-red-500'
+                }`}
+            />
+          </button>
+        </div>
+
+        {/* Quick Actions - Share */}
+        <div className="absolute top-14 right-3 z-10">
           <button
             onClick={handleShare}
-            className="p-2 rounded-full bg-background/80 backdrop-blur-sm text-foreground shadow-sm hover:bg-background transition-colors"
+            className="p-2.5 rounded-full bg-black/20 backdrop-blur-md hover:bg-white transition-all duration-300 group/share shadow-sm border border-white/10"
             title="Share"
           >
-            <Share2 className="w-4 h-4" />
+            {copied ? <Check className="w-4 h-4 text-green-500" /> : <Share2 className="w-4 h-4 text-white group-hover/share:text-blue-500" />}
           </button>
         </div>
       </div>
 
-      <div className="p-4 flex flex-col flex-grow">
-        <div className="flex-grow space-y-2">
-          {/* Capitalized, Bold Name */}
-          <div className="flex justify-between items-start gap-2">
-            <h3 className="text-lg font-bold leading-tight line-clamp-2 capitalize group-hover:text-primary transition-colors">{productName}</h3>
+      <div className="p-4 flex flex-col flex-1">
+        <div className="flex-1 mb-3">
+          <h3 className="font-semibold text-lg leading-tight line-clamp-2 capitalize group-hover:text-primary transition-colors min-h-[3rem] tracking-tight">{productName}</h3>
+
+          <div className="mt-3 flex items-end justify-between">
+            <div className="flex flex-col">
+              {hasDiscount ? (
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="text-sm text-muted-foreground line-through decoration-red-500/50">
+                    {formatPrice(mrp)}
+                  </span>
+                  <span className="text-[10px] font-bold text-white bg-green-600 px-2 py-0.5 rounded shadow-sm">
+                    saved {formatPrice(savedAmount)}
+                  </span>
+                </div>
+              ) : (
+                <div className="h-6"></div>
+              )}
+              <span className="font-bold text-2xl text-primary tracking-tight">{formatPrice(product.price)}</span>
+            </div>
           </div>
-          <span className="text-lg font-bold text-primary whitespace-nowrap block">₹{product.price.toFixed(0)}</span>
-          <p className="text-sm text-muted-foreground line-clamp-2">{productDesc}</p>
         </div>
 
-        <div className="mt-4 pt-4 border-t border-border/50 flex flex-col sm:flex-row gap-2 w-full">
-          {/* Stack on mobile, side-by-side on larger screens */}
+        <div className="mt-auto grid grid-cols-5 gap-3 w-full pt-4 border-t border-border/40">
           <button
             onClick={handleAddToCart}
-            className="flex-1 bg-secondary text-secondary-foreground px-4 py-2.5 rounded-xl hover:bg-secondary/90 transition-colors flex items-center justify-center gap-2 font-medium text-sm"
+            className={`col-span-3 px-3 py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 font-medium text-sm shadow-sm active:scale-95 ${isAdded
+              ? 'bg-green-600 text-white shadow-green-200'
+              : 'bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-lg'
+              }`}
           >
-            <ShoppingCart className="w-4 h-4 flex-shrink-0" />
-            <span>{t('addToCart') || 'Add to Cart'}</span>
+            {isAdded ? <Check className="w-4 h-4" /> : <ShoppingCart className="w-4 h-4" />}
+            <span className="truncate">{t('addToCart') || 'Add'}</span>
           </button>
+
           <button
             onClick={handleInquire}
             disabled={!hasWhatsapp}
-            className={`flex-1 px-4 py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 font-medium text-sm ${hasWhatsapp
-              ? 'bg-green-600 text-white hover:bg-green-700'
+            className={`col-span-2 px-3 py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 font-medium text-sm border ${hasWhatsapp
+              ? 'bg-secondary text-secondary-foreground hover:bg-secondary/80 border-border/50 hover:border-primary/20'
               : 'bg-muted text-muted-foreground opacity-50 cursor-not-allowed'
               }`}
+            title="WhatsApp Inquiry"
           >
-            <MessageCircle className="w-4 h-4 flex-shrink-0" />
-            <span className="truncate">{hasWhatsapp ? 'WhatsApp' : 'No WhatsApp'}</span>
+            <MessageCircle className="w-4 h-4" />
           </button>
         </div>
       </div>
@@ -226,7 +285,11 @@ const ProductList = ({ initialProducts = [], shop }: ProductListProps) => {
         setProducts(result.products);
         setPage(2); // Next page will be 2
       } else {
-        setProducts(prev => [...prev, ...result.products]);
+        setProducts(prev => {
+          const existingIds = new Set(prev.map(p => p.id));
+          const newUniqueProducts = result.products.filter(p => !existingIds.has(p.id));
+          return [...prev, ...newUniqueProducts];
+        });
         setPage(prev => prev + 1);
       }
       setHasMore(result.hasMore);

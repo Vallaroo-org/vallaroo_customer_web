@@ -2,12 +2,17 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
-import { Search, Filter, ShoppingCart, Check, Loader2 } from 'lucide-react';
+import { Search, Filter, ShoppingCart, Check, Loader2, MapPin, Heart, Share2 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useLanguage } from '../context/LanguageContext';
 import { getProducts, type Product as ActionProduct, type SortOption } from '../app/actions/get-products';
+import { useLocation } from '../context/LocationContext';
+import { getDrivingDistances } from '../lib/locationService';
+import { useWishlist } from '../context/WishlistContext';
 
-interface Product extends ActionProduct { }
+interface Product extends ActionProduct {
+    distance?: string;
+}
 
 interface GlobalProductListProps {
     initialProducts?: Product[];
@@ -16,8 +21,12 @@ interface GlobalProductListProps {
 // ProductCard for Global View (shows shop name)
 const GlobalProductCard = ({ product }: { product: Product }) => {
     const [isAdded, setIsAdded] = useState(false);
+    const [isCopied, setIsCopied] = useState(false);
     const { addToCart } = useCart();
+    const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
     const { locale, t } = useLanguage();
+
+    const isWishlisted = isInWishlist(product.id);
 
     const getLocalizedContent = (item: any, field: string) => {
         if (!item) return '';
@@ -30,12 +39,22 @@ const GlobalProductCard = ({ product }: { product: Product }) => {
     const productName = getLocalizedContent(product, 'name');
     const shopName = product.shops ? getLocalizedContent(product.shops, 'name') : 'Unknown Shop';
 
+    // Helper for Indian Currency Formatting
+    const formatPrice = (amount: number) => {
+        return new Intl.NumberFormat('en-IN', {
+            style: 'currency',
+            currency: 'INR',
+            maximumFractionDigits: 0,
+        }).format(amount);
+    };
+
     const handleAddToCart = (e: React.MouseEvent) => {
         e.preventDefault();
+        e.stopPropagation();
         addToCart({
             productId: product.id,
             quantity: 1,
-            shopId: product.shop_id || '',
+            shopId: product.shops?.id || '',
             shopName: shopName,
             shopPhone: product.shops?.phone_number,
             shopLogo: product.shops?.logo_url,
@@ -47,40 +66,138 @@ const GlobalProductCard = ({ product }: { product: Product }) => {
         setTimeout(() => setIsAdded(false), 2000);
     };
 
+    const toggleWishlist = (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (isWishlisted) {
+            removeFromWishlist(product.id);
+        } else {
+            addToWishlist(product);
+        }
+    };
+
+    const handleShare = (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const url = `${window.location.origin}/product/${product.id}`;
+
+        if (navigator.share) {
+            navigator.share({
+                title: productName,
+                text: `Check out ${productName} on Vallaroo!`,
+                url: url,
+            }).catch(console.error);
+        } else {
+            navigator.clipboard.writeText(url).then(() => {
+                setIsCopied(true);
+                setTimeout(() => setIsCopied(false), 2000);
+            });
+        }
+    };
+
+    // Calculate Discount based on MRP
+    const mrp = product.mrp || 0;
+    const hasDiscount = mrp > product.price;
+    const discountPercent = hasDiscount
+        ? Math.round(((mrp - product.price) / mrp) * 100)
+        : 0;
+    const savedAmount = hasDiscount ? mrp - product.price : 0;
+
     return (
         <Link href={`/product/${product.id}`} className="group block h-full">
-            <div className="overflow-hidden rounded-lg border border-border bg-card text-card-foreground shadow-sm transition-all duration-200 hover:shadow-lg hover:border-primary/50 h-full flex flex-col relative">
+            <div className="bg-card text-card-foreground rounded-2xl overflow-hidden border border-border/40 shadow-sm hover:shadow-2xl hover:border-primary/20 transition-all duration-300 h-full flex flex-col relative group-hover:-translate-y-1">
+                {/* Image Section */}
                 <div className="relative aspect-[4/5] w-full overflow-hidden bg-muted">
                     {product.image_urls?.[0] ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                            src={product.image_urls[0]}
-                            alt={productName}
-                            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                        />
+                        <div className="w-full h-full relative">
+                            {/* Using next/image would be better but keeping current img tag structure for minimal diff */}
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                                src={product.image_urls[0]}
+                                alt={productName}
+                                className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700"
+                            />
+                        </div>
                     ) : (
-                        <div className="absolute inset-0 bg-gradient-to-br from-secondary/50 to-muted flex items-center justify-center text-muted-foreground/50">
-                            <svg className="w-10 h-10 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+                        <div className="flex items-center justify-center h-full w-full bg-secondary/30 text-muted-foreground">
+                            <span className="text-sm">No Image</span>
                         </div>
                     )}
 
-                    {/* Add to Cart Button */}
-                    <button
-                        onClick={handleAddToCart}
-                        className="absolute bottom-2 right-2 p-2 rounded-full bg-background/90 text-foreground shadow-sm hover:bg-primary hover:text-primary-foreground transition-all 
-            opacity-100 translate-y-0
-            md:opacity-0 md:translate-y-2 md:group-hover:opacity-100 md:group-hover:translate-y-0 z-20"
-                        title={t('addToCart')}
-                    >
-                        {isAdded ? <Check className="w-4 h-4" /> : <ShoppingCart className="w-4 h-4" />}
-                    </button>
-                </div>
-                <div className="p-3 flex flex-col flex-1">
-                    <h3 className="font-semibold text-sm line-clamp-2 group-hover:text-primary transition-colors mb-1 capitalize">{productName}</h3>
-                    <p className="text-xs text-muted-foreground mb-2">{shopName}</p>
+                    {/* Discount Badge - Only if Discount Exists */}
+                    {hasDiscount && discountPercent > 0 && (
+                        <div className="absolute top-3 left-3 z-10">
+                            <span className="bg-red-600 text-white text-[10px] sm:text-xs font-bold px-2 py-1 rounded-md shadow-md animate-in fade-in zoom-in duration-300">
+                                {discountPercent}% OFF
+                            </span>
+                        </div>
+                    )}
 
-                    <div className="mt-auto flex items-baseline gap-2">
-                        <span className="font-bold text-lg text-primary">₹{product.price}</span>
+                    {/* Action Buttons Overlay */}
+                    <div className="absolute top-3 right-3 flex flex-col gap-2 z-20">
+                        {/* Wishlist Button */}
+                        <button onClick={toggleWishlist} className="p-2.5 rounded-full bg-black/20 backdrop-blur-md hover:bg-white transition-all duration-300 group/heart shadow-sm border border-white/10"
+                            title={isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
+                        >
+                            <Heart className={`w-4 h-4 transition-colors ${isWishlisted ? 'fill-red-500 text-red-500' : 'text-white group-hover/heart:text-red-500'}`} />
+                        </button>
+
+                        {/* Share Button */}
+                        <button onClick={handleShare} className="p-2.5 rounded-full bg-black/20 backdrop-blur-md hover:bg-white transition-all duration-300 group/share shadow-sm border border-white/10" title="Share Product">
+                            {isCopied ? (<Check className="w-4 h-4 text-green-500" />) : (<Share2 className="w-4 h-4 text-white group-hover/share:text-blue-500" />)}
+                        </button>
+                    </div>
+
+                    {/* Distance Badge */}
+                    {product.distance && (
+                        <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-md text-white text-[10px] sm:text-xs px-2.5 py-1 rounded-full flex items-center gap-1.5 font-medium z-10 border border-white/10">
+                            <MapPin className="w-3 h-3 text-primary" />
+                            <span>{product.distance} km</span>
+                        </div>
+                    )}
+                </div>
+
+                {/* Content Section */}
+                <div className="p-4 flex flex-col flex-1 bg-card">
+                    {/* Shop Name */}
+                    <div className="flex justify-between items-start mb-1 text-xs text-muted-foreground/80 font-medium tracking-wide uppercase">
+                        <span className="truncate w-full">{shopName}</span>
+                    </div>
+
+                    {/* Product Name */}
+                    <h3 className="font-semibold text-base leading-tight line-clamp-2 group-hover:text-primary transition-colors mb-3 capitalize min-h-[3rem] tracking-tight">
+                        {productName}
+                    </h3>
+
+                    {/* Price & Action */}
+                    <div className="mt-auto flex items-end justify-between pt-3 border-t border-border/40">
+                        <div className="flex flex-col">
+                            {hasDiscount ? (
+                                <div className="flex items-center gap-2 mb-0.5">
+                                    <span className="text-sm text-muted-foreground line-through decoration-red-500/50">
+                                        {formatPrice(mrp)}
+                                    </span>
+                                    {/* Darker green for light mode visibility */}
+                                    <span className="text-[10px] font-bold text-white bg-green-600 px-2 py-0.5 rounded shadow-sm">
+                                        saved {formatPrice(savedAmount)}
+                                    </span>
+                                </div>
+                            ) : (
+                                <div className="h-6"></div> // Spacer to keep alignment if no discount
+                            )}
+                            <span className="font-bold text-xl text-primary tracking-tight">{formatPrice(product.price)}</span>
+                        </div>
+
+                        <button
+                            onClick={handleAddToCart}
+                            className={`p-2.5 rounded-xl transition-all duration-300 shadow-sm active:scale-95 ${isAdded
+                                ? 'bg-green-500 text-white shadow-green-200 dark:shadow-green-900/20'
+                                : 'bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-lg hover:-translate-y-0.5'
+                                }`}
+                            title={t('addToCart')}
+                        >
+                            {isAdded ? <Check className="w-5 h-5" /> : <ShoppingCart className="w-5 h-5" />}
+                        </button>
                     </div>
                 </div>
             </div>
@@ -112,6 +229,9 @@ const GlobalProductList = ({ initialProducts = [] }: GlobalProductListProps) => 
     const hasInitiallyLoaded = useRef(false);
     const { t } = useLanguage();
 
+    // Location
+    const { latitude, longitude } = useLocation();
+
     // Fetch Data Function (Global - no shopId)
     const loadProducts = useCallback(async (isNewSearch = false) => {
         setLoading(true);
@@ -125,11 +245,18 @@ const GlobalProductList = ({ initialProducts = [] }: GlobalProductListProps) => 
                 // shopId is NOT passed, making this a global search
             });
 
+            const newProducts = result.products as Product[];
+
             if (isNewSearch) {
-                setProducts(result.products);
+                setProducts(newProducts);
                 setPage(2);
             } else {
-                setProducts(prev => [...prev, ...result.products]);
+                setProducts(prev => {
+                    // Deduplicate based on ID
+                    const existingIds = new Set(prev.map(p => p.id));
+                    const uniqueNew = newProducts.filter(p => !existingIds.has(p.id));
+                    return [...prev, ...uniqueNew];
+                });
                 setPage(prev => prev + 1);
             }
             setHasMore(result.hasMore);
@@ -140,6 +267,43 @@ const GlobalProductList = ({ initialProducts = [] }: GlobalProductListProps) => 
             setLoading(false);
         }
     }, [page, debouncedSearch, sortBy]);
+
+    // Calculate Distances
+    useEffect(() => {
+        const calculateDistances = async () => {
+            if (latitude && longitude && products.length > 0) {
+                // Get unique shops from products that need distance
+                const shopsToLocate = new Map();
+
+                products.forEach(p => {
+                    if (!p.distance && p.shops && p.shops.latitude && p.shops.longitude) {
+                        shopsToLocate.set(p.shop_id, {
+                            id: p.shop_id,
+                            latitude: p.shops.latitude,
+                            longitude: p.shops.longitude
+                        });
+                    }
+                });
+
+                if (shopsToLocate.size === 0) return;
+
+                const shopsArray = Array.from(shopsToLocate.values());
+                const distances = await getDrivingDistances(latitude, longitude, shopsArray);
+
+                if (Object.keys(distances).length > 0) {
+                    setProducts(prev =>
+                        prev.map(p => {
+                            if (p.shop_id && distances[p.shop_id]) {
+                                return { ...p, distance: distances[p.shop_id] };
+                            }
+                            return p;
+                        })
+                    );
+                }
+            }
+        };
+        calculateDistances();
+    }, [latitude, longitude, products.length]);
 
     // Effect: Search or Sort changed -> Reset and Fetch
     useEffect(() => {
@@ -221,7 +385,7 @@ const GlobalProductList = ({ initialProducts = [] }: GlobalProductListProps) => 
 
             {products.length > 0 ? (
                 <>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6">
                         {products.map((product) => (
                             <GlobalProductCard key={product.id} product={product} />
                         ))}

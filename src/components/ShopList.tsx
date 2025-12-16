@@ -5,15 +5,19 @@ import Link from 'next/link';
 import { Search, Filter, Loader2 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { getShops, type Shop as ActionShop, type ShopSortOption } from '../app/actions/get-shops';
+import { useLocation } from '../context/LocationContext';
+import { getDrivingDistances, type DistanceResult } from '../lib/locationService';
 
-interface Shop extends ActionShop { }
+interface Shop extends ActionShop {
+    distance?: string;
+}
 
 interface ShopListProps {
     initialShops?: Shop[];
 }
 
 const ShopCard = ({ shop }: { shop: Shop }) => {
-    const { locale } = useLanguage();
+    const { locale, t } = useLanguage();
 
     const getLocalizedContent = (item: any, field: string) => {
         if (!item) return '';
@@ -28,26 +32,28 @@ const ShopCard = ({ shop }: { shop: Shop }) => {
 
     return (
         <Link href={`/store/${shop.id}`} className="group block h-full">
-            <div className="overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-sm transition-all duration-200 hover:shadow-lg hover:border-primary/50 h-full flex flex-col">
+            <div className="overflow-hidden rounded-xl border border-border/50 bg-card text-card-foreground shadow-sm transition-all duration-300 hover:shadow-xl hover:border-primary/20 h-full flex flex-col group-hover:-translate-y-1">
                 {/* Banner Image */}
-                <div className="relative aspect-video w-full overflow-hidden bg-muted">
+                <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
                     {shop.cover_image_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
                             src={shop.cover_image_url}
                             alt={shopName}
-                            className="h-full w-full object-cover transition-transform duration-300 md:group-hover:scale-105"
+                            className="h-full w-full object-cover transition-transform duration-700 md:group-hover:scale-110"
                         />
                     ) : (
-                        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center text-muted-foreground/50">
-                            <svg className="w-12 h-12 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-primary/10 flex items-center justify-center text-muted-foreground/30">
+                            <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
                         </div>
                     )}
+                    {/* Overlay */}
+                    <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
                 </div>
 
-                <div className="p-4 flex flex-col flex-1 relative">
+                <div className="p-5 flex flex-col flex-1 relative pt-12">
                     {/* Logo (Overlapping Banner) */}
-                    <div className="absolute -top-10 left-4 h-16 w-16 rounded-full border-4 border-card bg-card overflow-hidden shadow-sm">
+                    <div className="absolute -top-10 left-5 h-20 w-20 rounded-2xl border-4 border-card bg-card overflow-hidden shadow-md group-hover:shadow-lg transition-all">
                         {shop.logo_url ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
@@ -56,23 +62,34 @@ const ShopCard = ({ shop }: { shop: Shop }) => {
                                 className="h-full w-full object-cover"
                             />
                         ) : (
-                            <div className="h-full w-full flex items-center justify-center bg-muted text-muted-foreground font-bold text-xl">
+                            <div className="h-full w-full flex items-center justify-center bg-primary/10 text-primary font-bold text-2xl">
                                 {shopName.charAt(0).toUpperCase()}
                             </div>
                         )}
                     </div>
 
-                    <div className="mt-6 flex items-start justify-between">
-                        <div>
-                            <h3 className="font-semibold tracking-tight text-lg group-hover:text-primary transition-colors capitalize">{shopName}</h3>
-                            <p className="text-sm text-muted-foreground">{shopCity}</p>
+                    <div className="flex flex-col gap-1 mb-2">
+                        <h3 className="font-bold text-xl tracking-tight group-hover:text-primary transition-colors capitalize line-clamp-1">{shopName}</h3>
+                        <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                            <span className="line-clamp-1">{shopCity}</span>
                         </div>
                     </div>
 
-                    <div className="mt-4 flex items-center text-xs text-muted-foreground mt-auto pt-2 border-t border-border/50">
-                        <div className="flex items-center gap-1">
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                            <span>Nearby</span>
+                    <div className="mt-auto pt-4 border-t border-border/50 flex items-center justify-between">
+                        {shop.distance ? (
+                            <div className="flex items-center gap-1.5 text-xs font-semibold text-primary bg-primary/5 border border-primary/10 px-2.5 py-1 rounded-full">
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                                <span>{shop.distance} km away</span>
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground bg-muted px-2.5 py-1 rounded-full">
+                                <span>Visit Store</span>
+                            </div>
+                        )}
+
+                        <div className="h-8 w-8 rounded-full bg-secondary text-secondary-foreground flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
                         </div>
                     </div>
                 </div>
@@ -105,6 +122,9 @@ const ShopList = ({ initialShops = [] }: ShopListProps) => {
     const hasInitiallyLoaded = useRef(false);
     const { t } = useLanguage();
 
+    // Location for distance calculation
+    const { latitude, longitude } = useLocation();
+
     // Fetch Data Function
     const loadShops = useCallback(async (isNewSearch = false) => {
         setLoading(true);
@@ -117,11 +137,18 @@ const ShopList = ({ initialShops = [] }: ShopListProps) => {
                 sortBy: sortBy,
             });
 
+            let newShops = result.shops as Shop[];
+
             if (isNewSearch) {
-                setShops(result.shops);
+                setShops(newShops);
                 setPage(2);
             } else {
-                setShops(prev => [...prev, ...result.shops]);
+                setShops(prev => {
+                    // Check for duplicates before adding
+                    const existingIds = new Set(prev.map(s => s.id));
+                    const uniqueNewShops = newShops.filter(s => !existingIds.has(s.id));
+                    return [...prev, ...uniqueNewShops];
+                });
                 setPage(prev => prev + 1);
             }
             setHasMore(result.hasMore);
@@ -133,6 +160,50 @@ const ShopList = ({ initialShops = [] }: ShopListProps) => {
         }
     }, [page, debouncedSearch, sortBy]);
 
+    // Calculate Distances AND Sort
+    useEffect(() => {
+        const calculateDistances = async () => {
+            if (latitude && longitude && shops.length > 0) {
+                // Only calculate for shops that don't have distance yet
+                const shopsToCalculate = shops.filter(s => !s.distance && s.latitude && s.longitude);
+
+                if (shopsToCalculate.length === 0) {
+                    // Even if no NEW calculations, if we have location, we should SORT the existing list 
+                    // if it isn't sorted by distance already? 
+                    // Actually, let's just re-sort whenever location is active to be safe.
+                    // But sorting triggers setShops which triggers this effect. Loop risk.
+                    // Check if already sorted?
+                    // Let's rely on the update below to sort.
+                    return;
+                }
+
+                const distances = await getDrivingDistances(latitude, longitude, shopsToCalculate);
+
+                if (Object.keys(distances).length > 0) {
+                    setShops(prevShops => {
+                        const updated = prevShops.map(shop => {
+                            if (distances[shop.id]) {
+                                return { ...shop, distance: distances[shop.id] };
+                            }
+                            return shop;
+                        });
+
+                        // Sort by Distance (Nearest First)
+                        // We push shops with distance to top, then sort by distance value
+                        // Shops without distance go to bottom
+                        return updated.sort((a, b) => {
+                            const distA = a.distance ? parseFloat(a.distance) : Infinity;
+                            const distB = b.distance ? parseFloat(b.distance) : Infinity;
+                            return distA - distB;
+                        });
+                    });
+                }
+            }
+        };
+
+        calculateDistances();
+    }, [latitude, longitude, shops.length]); // Intentionally dependent on shops.length to trigger on new loads
+
     // Effect: Search or Sort changed -> Reset and Fetch
     useEffect(() => {
         // On first render with default values and no initialShops, fetch data
@@ -143,6 +214,7 @@ const ShopList = ({ initialShops = [] }: ShopListProps) => {
         }
 
         // If we have initialShops and haven't changed filters, use them
+        // But trigger initial distance calculation if needed via the other useEffect
         if (debouncedSearch === '' && sortBy === 'newest' && page === 1 && shops === initialShops && initialShops.length > 0) {
             hasInitiallyLoaded.current = true;
             setPage(2);

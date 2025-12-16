@@ -100,4 +100,11 @@ export const en = {
   buyNow: "Buy Now",
   addToWishlist: "Add to Wishlist",
   removeFromWishlist: "Remove from Wishlist",
+  enterLocation: "Enter City, Area or Pincode",
+  locationNotFound: "Location not found",
+  selectLocation: "Select Location",
+  or: "OR",
+  wishlist: "My Wishlist",
+  wishlistEmpty: "Your wishlist is empty",
+  wishlistEmptyDesc: "Explore our wide selection and find something you love!",
 };
