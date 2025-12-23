@@ -59,16 +59,11 @@ export default function InstallPrompt() {
     return (
         <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-2xl p-4 z-50 animate-in slide-in-from-bottom-5 duration-500">
             <div className="flex items-start gap-4">
-                <div className="shrink-0 p-2 bg-gray-100 dark:bg-gray-800 rounded-xl">
+                <div className="shrink-0 p-2 bg-white dark:bg-gray-950 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm">
                     <img
-                        src="/vallaroo-logo-black.png"
+                        src="/v-icon.png"
                         alt="Vallaroo Logo"
-                        className="w-10 h-10 object-contain dark:hidden"
-                    />
-                    <img
-                        src="/vallaroo-logo-white.png"
-                        alt="Vallaroo Logo"
-                        className="w-10 h-10 object-contain hidden dark:block"
+                        className="w-10 h-10 object-contain"
                     />
                 </div>
                 <div className="flex-1">
