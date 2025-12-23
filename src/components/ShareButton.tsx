@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface ShareButtonProps {
   store: {
@@ -11,6 +12,7 @@ interface ShareButtonProps {
 
 const ShareButton = ({ store }: ShareButtonProps) => {
   const [copied, setCopied] = useState(false);
+  const { t } = useLanguage();
 
   const copyToClipboard = () => {
     const url = window.location.href;
@@ -22,7 +24,7 @@ const ShareButton = ({ store }: ShareButtonProps) => {
 
   const handleWhatsAppInquiry = () => {
     if (store.whatsapp_number) {
-      const whatsappMessage = encodeURIComponent(`I'm interested in your shop: ${store.name}.`);
+      const whatsappMessage = encodeURIComponent(t('inquireShopMsg', { shopName: store.name }));
       const cleanedWhatsappNumber = store.whatsapp_number.replace(/\D/g, '');
       const whatsappUrl = `https://wa.me/${cleanedWhatsappNumber.startsWith('91') ? cleanedWhatsappNumber : '91' + cleanedWhatsappNumber}?text=${whatsappMessage}`;
       window.open(whatsappUrl, '_blank');

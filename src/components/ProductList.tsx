@@ -88,7 +88,7 @@ const ProductCard = ({ product, shop }: { product: Product; shop: Shop }) => {
     e.stopPropagation();
     const baseUrl = window.location.origin;
     const productLink = `${baseUrl}/product/${product.id}`;
-    const whatsappMessage = encodeURIComponent(`I'm interested in your product: ${product.name}. More details: ${productLink}`);
+    const whatsappMessage = encodeURIComponent(`${t('inquireProductMsg', { shopName: shopName, productName: productName })} ${productLink}`);
 
     if (!shop.whatsapp_number) return;
     const cleanedWhatsappNumber = shop.whatsapp_number.replace(/\D/g, '');

@@ -43,7 +43,7 @@ const ServiceDetailsClient = ({ service }: { service: Service }) => {
     const shopName = service.shop ? getLocalizedContent(service.shop, 'name') : '';
 
     const handleInquire = () => {
-        const whatsappMessage = encodeURIComponent(`Hi ${shopName}, I'm interested in your service: ${service.name}.`);
+        const whatsappMessage = encodeURIComponent(t('inquireServiceMsg', { shopName: shopName, serviceName: serviceName }));
         if (!service.shop?.whatsapp_number) return;
 
         const cleanedWhatsappNumber = service.shop.whatsapp_number.replace(/\D/g, '');
@@ -144,8 +144,8 @@ const ServiceDetailsClient = ({ service }: { service: Service }) => {
                             onClick={handleInquire}
                             disabled={!service.shop?.whatsapp_number}
                             className={`flex-1 flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl font-semibold transition-all shadow-md ${service.shop?.whatsapp_number
-                                    ? 'bg-green-600 hover:bg-green-700 text-white shadow-green-600/20'
-                                    : 'bg-muted text-muted-foreground cursor-not-allowed'
+                                ? 'bg-green-600 hover:bg-green-700 text-white shadow-green-600/20'
+                                : 'bg-muted text-muted-foreground cursor-not-allowed'
                                 }`}
                         >
                             <MessageCircle className="w-5 h-5" />

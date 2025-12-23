@@ -141,7 +141,7 @@ const StoreView = ({ store, products, services = [], stories }: StoreViewProps) 
     const handleWhatsAppInquiry = () => {
         if (!store.phone_number) return;
         const cleanedNumber = store.phone_number.replace(/\D/g, '');
-        const whatsappUrl = `https://wa.me/${cleanedNumber}?text=${encodeURIComponent(`Hi ${getLocalizedContent(store, 'name')}, I have a query.`)}`;
+        const whatsappUrl = `https://wa.me/${cleanedNumber}?text=${encodeURIComponent(t('inquireShopMsg', { shopName: getLocalizedContent(store, 'name') }))}`;
         window.open(whatsappUrl, '_blank');
     };
 

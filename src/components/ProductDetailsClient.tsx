@@ -233,7 +233,7 @@ const ProductDetailsClient = ({ product }: ProductDetailsClientProps) => {
                     {/* WhatsApp Inquiry */}
                     {product.shops?.phone_number && (
                         <a
-                            href={`https://wa.me/${product.shops.phone_number.replace(/\D/g, '')}?text=${encodeURIComponent(`Hi, I'm interested in ${productName}.`)}`}
+                            href={`https://wa.me/${product.shops.phone_number.replace(/\D/g, '')}?text=${encodeURIComponent(t('inquireProductMsg', { shopName: shopName, productName: productName }))}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="w-full rounded-lg bg-green-600 px-6 py-3 text-base font-semibold text-white shadow-sm hover:bg-green-700 transition-colors flex items-center justify-center gap-2 min-h-[3rem]"

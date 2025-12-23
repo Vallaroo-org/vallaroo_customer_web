@@ -38,7 +38,7 @@ const ServiceCard = ({ service, shop }: { service: Service; shop: Shop }) => {
 
     const handleInquire = (e: React.MouseEvent) => {
         e.stopPropagation();
-        const whatsappMessage = encodeURIComponent(`I'm interested in your service: ${service.name}.`);
+        const whatsappMessage = encodeURIComponent(t('inquireServiceMsg', { shopName: shop.name, serviceName: serviceName }));
 
         if (!shop.whatsapp_number) return;
         const cleanedWhatsappNumber = shop.whatsapp_number.replace(/\D/g, '');
