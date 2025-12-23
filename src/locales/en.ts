@@ -1,6 +1,7 @@
 export const en = {
   appTitle: "Vallaroo",
   nearbyShops: "Nearby Shops",
+  nearbyServices: "Nearby Services",
   products: "Products",
   services: "Services",
   offers: "Offers",
