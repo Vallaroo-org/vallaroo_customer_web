@@ -65,9 +65,9 @@ export const ml = {
     phoneLabel: "ഫോൺ",
     addressLabel: "വിലാസം",
     inquireWhatsapp: "വാട്സാപ്പിൽ അന്വേഷിക്കുക",
-    inquireProductMsg: "നമസ്കാരം {shopName}, നിങ്ങളുടെ {productName} എന്ന ഉൽപ്പന്നത്തെക്കുറിച്ച് കൂടുതൽ അറിയാൻ ആഗ്രഹിക്കുന്നു.",
-    inquireServiceMsg: "നമസ്കാരം {shopName}, നിങ്ങളുടെ {serviceName} എന്ന സേവനത്തെക്കുറിച്ച് കൂടുതൽ അറിയാൻ ആഗ്രഹിക്കുന്നു.",
-    inquireShopMsg: "നമസ്കാരം {shopName}, എനിക്കൊരു കാര്യം ചോദിക്കാനുണ്ട്.",
+    inquireProductMsg: "നമസ്കാരം {shopName}, നിങ്ങളുടെ {productName} എന്ന ഉൽപ്പന്നത്തെക്കുറിച്ച് കൂടുതൽ അറിയാൻ ആഗ്രഹിക്കുന്നു. ലിങ്ക്: {link}",
+    inquireServiceMsg: "നമസ്കാരം {shopName}, നിങ്ങളുടെ {serviceName} എന്ന സേവനത്തെക്കുറിച്ച് കൂടുതൽ അറിയാൻ ആഗ്രഹിക്കുന്നു. ലിങ്ക്: {link}",
+    inquireShopMsg: "നമസ്കാരം {shopName}, നിങ്ങളുടെ കടയെക്കുറിച്ച് എനിക്കൊരു കാര്യം ചോദിക്കാനുണ്ട്. ലിങ്ക്: {link}",
     inquiryUnavailable: "അന്വേഷണം ലഭ്യമല്ല",
     inclusiveTaxes: "എല്ലാ നികുതികളും ഉൾപ്പെടെ",
     off: "% കിഴിവ്",
@@ -158,4 +158,11 @@ export const ml = {
 
     // Navbar
     myProfile: "എന്റെ പ്രൊഫൈൽ",
+
+    // Order WhatsApp Message
+    orderMessageIntro: "{shopName}-ലേക്കുള്ള പുതിയ ഓർഡർ",
+    orderIdLabel: "ഓർഡർ ഐഡി",
+    itemsLabel: "സാധനങ്ങൾ",
+    customerDetailsLabel: "ഉപഭോക്താവിന്റെ വിവരങ്ങൾ",
+    viewOrderLink: "ഓർഡർ കാണുക: {link}",
 };

@@ -141,8 +141,8 @@ const CartPage = () => {
             const shopName = items[0].shopName;
 
             // Format strictly as requested
-            let message = `New Order for ${shopName}\n`;
-            message += `Order ID: #${orderId}\n`;
+            let message = `${t('orderMessageIntro', { shopName })}\n`;
+            message += `${t('orderIdLabel')}: #${orderId}\n`;
             message += `----------------\n`;
 
             items.forEach(item => {
@@ -150,12 +150,12 @@ const CartPage = () => {
             });
 
             message += `----------------\n`;
-            message += `Total: ₹${total}.0\n`;
+            message += `${t('total')}: ₹${total}.0\n`;
             message += `----------------\n`;
-            message += `Customer Details:\n`;
-            message += `Name: ${address.recipient_name || customerName}\n`;
-            message += `Phone: ${address.phone_number || customerPhone}\n`;
-            message += `Address: ${customerAddress}\n\n`;
+            message += `${t('customerDetailsLabel')}:\n`;
+            message += `${t('name')}: ${address.recipient_name || customerName}\n`;
+            message += `${t('phone')}: ${address.phone_number || customerPhone}\n`;
+            message += `${t('address')}: ${customerAddress}\n\n`;
 
             // Generate link (using window.location.origin to be dynamic)
             const origin = typeof window !== 'undefined' ? window.location.origin : 'https://vallaroo.com';
@@ -165,7 +165,7 @@ const CartPage = () => {
             // or just the generic domain. 
             // Since we implemented /order/page.tsx previously (I recall seeing it in edited_files!), 
             // I will link to created /order page.
-            message += `Order Details: ${origin}/order?id=${orderId}`;
+            message += t('viewOrderLink', { link: `${origin}/order?id=${orderId}` });
 
             // 5. Open WhatsApp
             const cleanedPhone = shopPhone.replace(/\D/g, '');

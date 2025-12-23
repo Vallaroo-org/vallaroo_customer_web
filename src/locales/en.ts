@@ -63,9 +63,9 @@ export const en = {
   phoneLabel: "Phone",
   addressLabel: "Address",
   inquireWhatsapp: "Inquire on WhatsApp",
-  inquireProductMsg: "Hi {shopName}, I'm interested in your product: {productName}.",
-  inquireServiceMsg: "Hi {shopName}, I'm interested in your service: {serviceName}.",
-  inquireShopMsg: "Hi {shopName}, I have a query.",
+  inquireProductMsg: "Hi {shopName}, I'm interested in your product: {productName}. Link: {link}",
+  inquireServiceMsg: "Hi {shopName}, I'm interested in your service: {serviceName}. Link: {link}",
+  inquireShopMsg: "Hi {shopName}, I have a query regarding your store: {link}",
   inquiryUnavailable: "Inquiry Unavailable",
   inclusiveTaxes: "Inclusive of all taxes",
   off: "% OFF",
@@ -158,4 +158,11 @@ export const en = {
 
   // Navbar
   myProfile: "My Profile",
+
+  // Order WhatsApp Message
+  orderMessageIntro: "New Order for {shopName}",
+  orderIdLabel: "Order ID",
+  itemsLabel: "Items",
+  customerDetailsLabel: "Customer Details",
+  viewOrderLink: "View Order: {link}",
 };

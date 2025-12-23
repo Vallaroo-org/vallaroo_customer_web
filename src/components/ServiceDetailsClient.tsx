@@ -43,7 +43,11 @@ const ServiceDetailsClient = ({ service }: { service: Service }) => {
     const shopName = service.shop ? getLocalizedContent(service.shop, 'name') : '';
 
     const handleInquire = () => {
-        const whatsappMessage = encodeURIComponent(t('inquireServiceMsg', { shopName: shopName, serviceName: serviceName }));
+        const whatsappMessage = encodeURIComponent(t('inquireServiceMsg', {
+            shopName: shopName,
+            serviceName: serviceName,
+            link: window.location.href
+        }));
         if (!service.shop?.whatsapp_number) return;
 
         const cleanedWhatsappNumber = service.shop.whatsapp_number.replace(/\D/g, '');

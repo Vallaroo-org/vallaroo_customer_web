@@ -66,7 +66,7 @@ const DiscoverContent = () => {
           <button
             onClick={() => setActiveTab('products')}
             className={`w-full rounded-lg py-2.5 text-sm font-medium leading-5 transition-all duration-200 focus:outline-none focus:ring-2 ring-offset-2 ring-offset-background focus:ring-primary ${activeTab === 'products'
-              ? 'bg-background shadow-md text-foreground'
+              ? 'bg-primary text-primary-foreground shadow-md'
               : 'text-muted-foreground hover:bg-background/50 hover:text-foreground hover:shadow-sm'
               }`}
           >
@@ -75,7 +75,7 @@ const DiscoverContent = () => {
           <button
             onClick={() => setActiveTab('services')}
             className={`w-full rounded-lg py-2.5 text-sm font-medium leading-5 transition-all duration-200 focus:outline-none focus:ring-2 ring-offset-2 ring-offset-background focus:ring-primary ${activeTab === 'services'
-              ? 'bg-background shadow-md text-foreground'
+              ? 'bg-primary text-primary-foreground shadow-md'
               : 'text-muted-foreground hover:bg-background/50 hover:text-foreground hover:shadow-sm'
               }`}
           >
@@ -84,7 +84,7 @@ const DiscoverContent = () => {
           <button
             onClick={() => setActiveTab('shops')}
             className={`w-full rounded-lg py-2.5 text-sm font-medium leading-5 transition-all duration-200 focus:outline-none focus:ring-2 ring-offset-2 ring-offset-background focus:ring-primary ${activeTab === 'shops'
-              ? 'bg-background shadow-md text-foreground'
+              ? 'bg-primary text-primary-foreground shadow-md'
               : 'text-muted-foreground hover:bg-background/50 hover:text-foreground hover:shadow-sm'
               }`}
           >

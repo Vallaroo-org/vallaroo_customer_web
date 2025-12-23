@@ -12,6 +12,8 @@ export interface Service {
     description: string;
     price: number;
     image_urls: string[];
+    name_ml?: string;
+    description_ml?: string;
     is_active?: boolean;
     created_at?: string;
     shop_id?: string;
