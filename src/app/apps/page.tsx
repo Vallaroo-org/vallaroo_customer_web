@@ -66,17 +66,15 @@ const AppsPage = () => {
                                         Track your orders in real-time and enjoy exclusive app-only discounts.
                                     </p>
                                     <div className="flex flex-col sm:flex-row gap-4">
-                                        <Link
-                                            href="https://dihxruochfwayuwqhkiw.supabase.co/storage/v1/object/public/downloads/vallaroo-app.apk"
-                                            className="flex items-center gap-3 border-2 border-foreground text-foreground px-6 py-3 rounded-xl hover:bg-foreground hover:text-background transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5)]"
-                                            target="_blank"
+                                        <div
+                                            className="flex items-center gap-3 border-2 border-foreground/50 text-foreground/50 px-6 py-3 rounded-xl cursor-not-allowed"
                                         >
                                             <Smartphone className="w-6 h-6" />
                                             <div className="text-left">
-                                                <div className="text-[10px] font-medium opacity-80 uppercase tracking-wider">Download APK</div>
-                                                <div className="font-bold leading-none">Android Direct</div>
+                                                <div className="text-[10px] font-medium opacity-80 uppercase tracking-wider">Android App</div>
+                                                <div className="font-bold leading-none">Coming Soon</div>
                                             </div>
-                                        </Link>
+                                        </div>
                                         {/* Placeholder for App Store / Play Store if available later */}
                                     </div>
                                 </div>
