@@ -34,7 +34,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
     const t = (key: keyof Translations, params?: Record<string, string | number>) => {
         const translations = locale === 'ml' ? ml : en;
-        let text = translations[key] || en[key] || key;
+        let text = (translations as any)[key] || en[key] || key;
 
         if (params) {
             Object.entries(params).forEach(([k, v]) => {
