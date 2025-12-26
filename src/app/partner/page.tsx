@@ -32,13 +32,23 @@ const PartnerPage = () => {
                             <div className="flex flex-col sm:flex-row gap-4 justify-center">
                                 <Link
                                     href="https://business.vallaroo.com"
-                                    className="bg-primary text-primary-foreground px-8 py-4 rounded-xl font-semibold hover:bg-primary/90 transition-all shadow-lg hover:shadow-xl hover:-translate-y-1"
+                                    className="bg-amber-500 text-black px-8 py-4 rounded-xl font-bold hover:bg-amber-400 transition-all shadow-[0_0_25px_rgba(245,158,11,0.5)] hover:shadow-[0_0_35px_rgba(245,158,11,0.7)] hover:-translate-y-1"
                                 >
                                     Start Selling Now
                                 </Link>
                                 <Link
+                                    href="/vallaroo-business-app.apk"
+                                    className="flex items-center justify-center gap-2 border-2 border-foreground text-foreground px-8 py-4 rounded-xl font-semibold hover:bg-foreground hover:text-background transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5)]"
+                                    download
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                    </svg>
+                                    Download App
+                                </Link>
+                                <Link
                                     href="/contact"
-                                    className="bg-background border border-border text-foreground px-8 py-4 rounded-xl font-semibold hover:bg-accent transition-all"
+                                    className="border-2 border-border text-foreground px-8 py-4 rounded-xl font-semibold hover:bg-accent transition-all"
                                 >
                                     Contact Sales
                                 </Link>
@@ -136,7 +146,7 @@ const PartnerPage = () => {
                         </p>
                         <Link
                             href="https://business.vallaroo.com/signup"
-                            className="bg-primary text-primary-foreground px-10 py-4 rounded-xl font-bold text-lg hover:bg-primary/90 transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1 inline-block"
+                            className="bg-amber-500 text-black px-10 py-4 rounded-xl font-bold text-lg hover:bg-amber-400 transition-all shadow-[0_0_25px_rgba(245,158,11,0.5)] hover:shadow-[0_0_35px_rgba(245,158,11,0.7)] hover:-translate-y-1 inline-block"
                         >
                             Register Your Shop
                         </Link>

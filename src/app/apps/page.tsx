@@ -68,7 +68,7 @@ const AppsPage = () => {
                                     <div className="flex flex-col sm:flex-row gap-4">
                                         <Link
                                             href="https://dihxruochfwayuwqhkiw.supabase.co/storage/v1/object/public/downloads/vallaroo-app.apk"
-                                            className="flex items-center gap-3 bg-foreground text-background px-6 py-3 rounded-xl hover:bg-foreground/90 transition-all shadow-lg"
+                                            className="flex items-center gap-3 border-2 border-foreground text-foreground px-6 py-3 rounded-xl hover:bg-foreground hover:text-background transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5)]"
                                             target="_blank"
                                         >
                                             <Smartphone className="w-6 h-6" />
@@ -142,7 +142,7 @@ const AppsPage = () => {
                                     <div className="flex flex-col sm:flex-row gap-4">
                                         <Link
                                             href="/vallaroo-business-app.apk"
-                                            className="flex items-center gap-3 bg-foreground text-background px-6 py-3 rounded-xl hover:bg-foreground/90 transition-all shadow-lg"
+                                            className="flex items-center gap-3 border-2 border-foreground text-foreground px-6 py-3 rounded-xl hover:bg-foreground hover:text-background transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5)]"
                                             target="_blank"
                                             download
                                         >
