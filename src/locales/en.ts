@@ -185,7 +185,7 @@ export const en = {
   signUpLink: "Sign up",
   signUpTitle: "Create an Account",
   signUpSubtitle: "Join Vallaroo today",
-  fullNameLabel: "Full Name",
+
   confirmPasswordLabel: "Confirm Password",
   signUpButton: "Sign up",
   alreadyHaveAccount: "Already have an account?",

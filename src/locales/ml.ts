@@ -180,7 +180,7 @@ export const ml = {
     signUpLink: "അക്കൗണ്ട് ഉണ്ടാക്കുക",
     signUpTitle: "അക്കൗണ്ട് ഉണ്ടാക്കുക",
     signUpSubtitle: "വല്ലാറൂവിൽ ചേരുക",
-    fullNameLabel: "പൂർണ്ണ പേര്",
+
     confirmPasswordLabel: "പാസ്വേഡ് സ്ഥിരീകരിക്കുക",
     signUpButton: "രജിസ്റ്റർ ചെയ്യുക",
     alreadyHaveAccount: "അക്കൗണ്ട് ഉണ്ടോ?",
